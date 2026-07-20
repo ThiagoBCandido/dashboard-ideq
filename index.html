@@ -1,670 +1,2893 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
-<meta name="theme-color" content="#5a7a3a">
-<title>Dashboard IDEQ - GITIA</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-<style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-:root{--vp:#7b9452;--ve:#5a7a3a;--vc:#c6d063;--fundo:#f5f3ee;--texto:#1f2937;--cb:#e5e7eb;--cc:#f3f4f6;--vm:#dc2626;--la:#f59e0b;--am:#eab308}
-html{font-size:16px;-webkit-text-size-adjust:100%}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;background:var(--fundo);color:var(--texto);min-height:100vh;overflow-x:hidden}
-#dash{max-width:1200px;margin:0 auto;padding:clamp(12px,3vw,24px)}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#5a7a3a">
+  <title>Gestão de Ativos de TI - GITIA</title>
 
-.header{display:flex;flex-direction:column;align-items:center;background:#fff;border-radius:clamp(8px,2vw,10px);padding:clamp(14px,3vw,20px) clamp(16px,4vw,28px);margin-bottom:clamp(10px,2vw,20px);box-shadow:0 2px 8px rgba(0,0,0,.06);border-bottom:4px solid var(--vp)}
-.header-logo-wrap{display:flex;justify-content:center;align-items:center;margin-bottom:8px}
-.header-logo-wrap img{max-width:clamp(90px,22vw,160px);max-height:90px;object-fit:contain}
-.header-logo-wrap svg{width:clamp(90px,22vw,160px);height:auto}
-.header-title{color:var(--ve);font-size:clamp(13px,3.2vw,18px);font-weight:700;text-align:center;line-height:1.3}
-.header-meta{color:#6b7280;font-size:clamp(10px,2.3vw,13px);margin-top:4px;text-align:center;line-height:1.4}
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-.toolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:clamp(10px,2vw,20px);flex-wrap:wrap}
-.tl,.tr{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-.badge{font-size:clamp(10px,2.3vw,12px);padding:5px 12px;border-radius:20px;background:#fff;color:#6b7280;font-weight:500;display:flex;align-items:center;gap:6px;border:1px solid var(--cb)}
-.badge::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--vc);flex-shrink:0}
-.badge.live::before{background:var(--vp)}
-.btn{padding:clamp(8px,2vw,10px) clamp(12px,3vw,18px);border:none;border-radius:6px;font-size:clamp(11px,2.6vw,13px);font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit;display:inline-flex;align-items:center;gap:6px;touch-action:manipulation;white-space:nowrap}
-.btn-up{background:var(--vp);color:#fff}.btn-up:active{background:var(--ve);transform:scale(.97)}
-.btn-exp{background:var(--ve);color:#fff}.btn-exp:active{background:#4a6a2e;transform:scale(.97)}
-.btn:disabled{opacity:.5}
-#fi{display:none}
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(8px,2vw,14px);margin-bottom:clamp(10px,2vw,20px)}
-.kpi{background:#fff;border-radius:8px;padding:clamp(10px,2.5vw,16px) clamp(12px,3vw,18px);box-shadow:0 1px 4px rgba(0,0,0,.07);border-left:4px solid var(--vp);opacity:0;transform:translateY(20px);transition:opacity .5s,transform .5s}
-.kpi.vis{opacity:1;transform:translateY(0)}
-.kpi.alert{border-left-color:var(--vm)}.kpi.acc{border-left-color:var(--vc)}
-.kpi-val{font-size:clamp(22px,5.5vw,32px);font-weight:700;color:var(--ve);line-height:1.2}
-.kpi.alert .kpi-val{color:var(--vm)}
-.kpi-lbl{font-size:clamp(9px,2vw,12px);color:#6b7280;margin-top:4px;text-transform:uppercase;letter-spacing:.5px}
+    :root {
+      --verde: #5a7a3a;
+      --verde-claro: #7b9452;
+      --verde-suave: #c6d063;
+      --fundo: #f5f3ee;
+      --branco: #fff;
+      --texto: #1f2937;
+      --texto-suave: #6b7280;
+      --borda: #e5e7eb;
+      --cinza: #f3f4f6;
+      --vermelho: #dc2626;
+      --laranja: #f59e0b;
+      --azul: #2563eb;
+    }
 
-.cgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(8px,2vw,16px);margin-bottom:clamp(10px,2vw,20px)}
-.cblock{background:#fff;border-radius:8px;padding:clamp(12px,3vw,18px);box-shadow:0 1px 4px rgba(0,0,0,.07);opacity:0;transform:translateY(20px);transition:opacity .5s,transform .5s}
-.cblock.vis{opacity:1;transform:translateY(0)}
-.ctitle{font-size:clamp(11px,2.6vw,13px);font-weight:700;color:var(--ve);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--vc)}
-.cwrap{position:relative;height:clamp(180px,38vw,260px)}
+    body {
+      min-height: 100vh;
+      overflow-x: hidden;
+      background: var(--fundo);
+      color: var(--texto);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    }
 
-.asec{background:#fff;border-radius:8px;padding:clamp(12px,3vw,18px);box-shadow:0 1px 4px rgba(0,0,0,.07);margin-bottom:clamp(10px,2vw,20px);opacity:0;transform:translateY(20px);transition:opacity .5s,transform .5s}
-.asec.vis{opacity:1;transform:translateY(0)}
-.agrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.aitem{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-radius:6px;font-size:clamp(10px,2.3vw,12px);line-height:1.5}
-.ar{background:#fef2f2;border-left:3px solid var(--vm)}
-.ao{background:#fff7ed;border-left:3px solid var(--la)}
-.ay{background:#fefce8;border-left:3px solid var(--am)}
-.adot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px}
-.adot.r{background:var(--vm)}.adot.o{background:var(--la)}.adot.y{background:var(--am)}
+    button,
+    input,
+    select {
+      font: inherit;
+    }
 
-.conc{display:grid;grid-template-columns:1fr 1fr;gap:clamp(8px,2vw,16px);margin-bottom:clamp(10px,2vw,20px)}
-.cbl{background:#fff;border-radius:8px;padding:clamp(12px,3vw,18px);box-shadow:0 1px 4px rgba(0,0,0,.07);opacity:0;transform:translateY(20px);transition:opacity .5s,transform .5s}
-.cbl.vis{opacity:1;transform:translateY(0)}
+    button {
+      cursor: pointer;
+    }
 
-.ins-item{display:flex;gap:8px;padding:7px 0;border-bottom:1px solid var(--cc);align-items:flex-start}
-.ins-item:last-child{border-bottom:none}
-.ins-cat{font-size:10px;font-weight:700;color:var(--vp);background:var(--cc);padding:2px 8px;border-radius:10px;flex-shrink:0;white-space:nowrap;margin-top:1px}
-.ins-text{font-size:clamp(10px,2.3vw,12px);line-height:1.5;flex:1;color:var(--texto)}
-.ins-text strong{color:var(--ve);font-weight:700;font-size:clamp(11px,2.5vw,13px)}
+    .app {
+      width: min(1600px, 100%);
+      margin: 0 auto;
+      padding: 20px;
+    }
 
-.rec-item{padding:8px 0;border-bottom:1px solid var(--cc)}
-.rec-item:last-child{border-bottom:none;padding-bottom:0}
-.rec-num{font-size:11px;font-weight:700;color:var(--vp);margin-bottom:2px}
-.rec-title{font-size:clamp(11px,2.5vw,12px);font-weight:700;color:var(--ve);margin-bottom:4px}
-.rec-detail{font-size:clamp(10px,2.2vw,11px);line-height:1.5;color:#4b5563;padding-left:10px;margin-bottom:2px}
-.rec-detail strong{color:var(--vp);font-weight:600}
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 16px;
+      padding: 18px 22px;
+      border-bottom: 4px solid var(--verde-claro);
+      border-radius: 12px;
+      background: var(--branco);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, .06);
+    }
 
-.loading{position:fixed;inset:0;background:rgba(245,243,238,.94);display:flex;justify-content:center;align-items:center;z-index:9999;transition:opacity .3s}
-.loading.hid{opacity:0;pointer-events:none}
-.spin{width:44px;height:44px;border:4px solid var(--cb);border-top:4px solid var(--vp);border-radius:50%;animation:sp .8s linear infinite}
-@keyframes sp{to{transform:rotate(360deg)}}
-.footer{text-align:center;font-size:10px;color:#9ca3af;padding:12px 0}
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
 
-.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--vm);color:#fff;padding:12px 24px;border-radius:8px;font-size:13px;z-index:10000;box-shadow:0 4px 12px rgba(0,0,0,.3);transition:transform .3s;max-width:90vw;text-align:center}
-.toast.show{transform:translateX(-50%) translateY(0)}
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px;
+      height: 56px;
+      flex-shrink: 0;
+      overflow: hidden;
+      border-radius: 50%;
+      background: #fff;
+    }
 
-@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}.cgrid{grid-template-columns:1fr}.agrid{grid-template-columns:1fr}.conc{grid-template-columns:1fr}}
-@media(max-width:500px){.kpis{grid-template-columns:1fr 1fr}.toolbar{flex-direction:column;align-items:stretch}.tl,.tr{justify-content:center}.btn{width:100%;justify-content:center}}
-@media(max-width:360px){.kpis{grid-template-columns:1fr}}
-@media print{body{background:#fff}#dash{max-width:100%;padding:0}.toolbar{display:none}.kpi,.cblock,.asec,.cbl{box-shadow:none;border:1px solid var(--cb);opacity:1;transform:none;break-inside:avoid}}
-</style>
+    .brand-logo img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .brand h1 {
+      color: var(--verde);
+      font-size: clamp(18px, 2.5vw, 26px);
+    }
+
+    .brand p {
+      margin-top: 3px;
+      color: var(--texto-suave);
+      font-size: 12px;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 9px 15px;
+      border: 0;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .btn-primary {
+      background: var(--verde);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #4b682f;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .source-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding: 10px 14px;
+      border: 1px solid var(--borda);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--texto-suave);
+      font-size: 12px;
+    }
+
+    .source-bar strong {
+      color: var(--verde);
+    }
+
+    .search-panel {
+      display: grid;
+      grid-template-columns: minmax(260px, 1fr) repeat(6, minmax(130px, 180px));
+      gap: 9px;
+      margin-bottom: 16px;
+      padding: 14px;
+      border: 1px solid var(--borda);
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .search-box {
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      height: 40px;
+      padding: 0 12px 0 36px;
+      border: 1px solid var(--borda);
+      border-radius: 7px;
+      outline: 0;
+      color: var(--texto);
+    }
+
+    .search-box input:focus,
+    .filter-select:focus {
+      border-color: var(--verde-claro);
+      box-shadow: 0 0 0 3px rgba(123, 148, 82, .15);
+    }
+
+    .search-icon {
+      position: absolute;
+      top: 9px;
+      left: 13px;
+      color: var(--texto-suave);
+      font-size: 17px;
+    }
+
+    .filter-select {
+      width: 100%;
+      height: 40px;
+      padding: 0 9px;
+      border: 1px solid var(--borda);
+      border-radius: 7px;
+      outline: 0;
+      background: #fff;
+      color: var(--texto);
+      font-size: 11px;
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(130px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .kpi {
+      min-height: 100px;
+      padding: 15px;
+      border-left: 4px solid var(--verde-claro);
+      border-radius: 9px;
+      background: #fff;
+      box-shadow: 0 1px 5px rgba(0, 0, 0, .06);
+    }
+
+    .kpi.warning {
+      border-left-color: var(--laranja);
+    }
+
+    .kpi.alert {
+      border-left-color: var(--vermelho);
+    }
+
+    .kpi-value {
+      color: var(--verde);
+      font-size: 27px;
+      font-weight: 800;
+    }
+
+    .kpi.warning .kpi-value {
+      color: var(--laranja);
+    }
+
+    .kpi.alert .kpi-value {
+      color: var(--vermelho);
+    }
+
+    .kpi-label {
+      margin-top: 8px;
+      color: var(--texto-suave);
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: .3px;
+      line-height: 1.3;
+      text-transform: uppercase;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-bottom: 16px;
+      padding: 6px;
+      border: 1px solid var(--borda);
+      border-radius: 9px;
+      background: #fff;
+    }
+
+    .tab {
+      padding: 9px 13px;
+      border: 0;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--texto-suave);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .tab.active {
+      background: var(--verde);
+      color: #fff;
+    }
+
+    .view {
+      display: none;
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .section-header h2 {
+      color: var(--verde);
+      font-size: 18px;
+    }
+
+    .section-header p {
+      margin-top: 3px;
+      color: var(--texto-suave);
+      font-size: 12px;
+    }
+
+    .section-count {
+      padding: 6px 10px;
+      border-radius: 20px;
+      background: var(--cinza);
+      color: var(--verde);
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(9, minmax(105px, 1fr));
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .summary-card {
+      padding: 12px;
+      border: 1px solid var(--borda);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .summary-card strong {
+      display: block;
+      color: var(--verde);
+      font-size: 22px;
+    }
+
+    .summary-card.warning strong {
+      color: var(--laranja);
+    }
+
+    .summary-card.alert strong {
+      color: var(--vermelho);
+    }
+
+    .summary-card span {
+      display: block;
+      margin-top: 4px;
+      color: var(--texto-suave);
+      font-size: 10px;
+      line-height: 1.3;
+    }
+
+    .table-card {
+      overflow: hidden;
+      border: 1px solid var(--borda);
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .table-scroll {
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      min-width: 1300px;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      padding: 12px 10px;
+      border-bottom: 2px solid var(--verde-suave);
+      background: #fbfcf8;
+      color: var(--verde);
+      font-size: 10px;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 10px;
+      border-bottom: 1px solid var(--borda);
+      vertical-align: top;
+    }
+
+    tbody tr:hover {
+      background: #fafcf7;
+    }
+
+    .empty-cell {
+      padding: 40px 20px;
+      color: var(--texto-suave);
+      text-align: center;
+    }
+
+    .status {
+      display: inline-flex;
+      padding: 4px 8px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .status-active,
+    .status-available,
+    .status-use {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .status-stock {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .status-inactive {
+      background: #f3f4f6;
+      color: #4b5563;
+    }
+
+    .status-maintenance {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .status-replacement {
+      background: #ffedd5;
+      color: #9a3412;
+    }
+
+    .status-problem {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .status-default {
+      background: #e0e7ff;
+      color: #3730a3;
+    }
+
+    .category-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(190px, 1fr));
+      gap: 12px;
+    }
+
+    .category-card {
+      padding: 15px;
+      border: 1px solid var(--borda);
+      border-top: 4px solid var(--verde-claro);
+      border-radius: 9px;
+      background: #fff;
+    }
+
+    .category-card h3 {
+      color: var(--verde);
+      font-size: 14px;
+    }
+
+    .category-total {
+      margin: 10px 0;
+      color: var(--texto);
+      font-size: 25px;
+      font-weight: 800;
+    }
+
+    .category-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    .category-stat {
+      padding: 7px;
+      border-radius: 6px;
+      background: var(--cinza);
+    }
+
+    .category-stat strong {
+      display: block;
+      font-size: 16px;
+    }
+
+    .category-stat span {
+      color: var(--texto-suave);
+      font-size: 10px;
+    }
+
+    .people-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .person-card {
+      padding: 15px;
+      border: 1px solid var(--borda);
+      border-radius: 9px;
+      background: #fff;
+    }
+
+    .person-card h3 {
+      color: var(--verde);
+      font-size: 14px;
+    }
+
+    .person-count {
+      margin: 5px 0 10px;
+      color: var(--texto-suave);
+      font-size: 12px;
+    }
+
+    .person-assets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .asset-chip {
+      padding: 4px 7px;
+      border-radius: 5px;
+      background: var(--cinza);
+      color: var(--texto);
+      font-size: 10px;
+    }
+
+    .patrimony-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(140px, 1fr));
+      gap: 12px;
+    }
+
+    .patrimony-card {
+      min-height: 110px;
+      padding: 14px;
+      border-left: 4px solid var(--laranja);
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, .05);
+    }
+
+    .patrimony-card strong {
+      display: block;
+      font-size: 25px;
+    }
+
+    .patrimony-card span {
+      display: block;
+      margin-top: 6px;
+      color: var(--texto-suave);
+      font-size: 10px;
+      line-height: 1.3;
+    }
+
+    .raw-columns {
+      margin-top: 16px;
+    }
+
+    .raw-columns summary {
+      padding: 12px;
+      border: 1px solid var(--borda);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--verde);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .raw-columns-content {
+      margin-top: 8px;
+      padding: 12px;
+      border: 1px solid var(--borda);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .pill-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .pill {
+      padding: 5px 8px;
+      border-radius: 20px;
+      background: var(--cinza);
+      color: var(--texto);
+      font-size: 11px;
+    }
+
+    .empty-state {
+      padding: 70px 20px;
+      border: 1px dashed #cbd5c0;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, .6);
+      color: var(--texto-suave);
+      text-align: center;
+    }
+
+    .empty-state h2 {
+      margin-bottom: 8px;
+      color: var(--verde);
+      font-size: 20px;
+    }
+
+    .empty-state p {
+      max-width: 600px;
+      margin: 0 auto 18px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .loading {
+      position: fixed;
+      z-index: 9999;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(245, 243, 238, .94);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s;
+    }
+
+    .loading.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .spinner {
+      width: 42px;
+      height: 42px;
+      border: 4px solid var(--borda);
+      border-top-color: var(--verde);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (max-width: 1350px) {
+      .search-panel {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      .search-box {
+        grid-column: 1 / -1;
+      }
+
+      .kpis {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(5, 1fr);
+      }
+
+      .category-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .patrimony-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    @media (max-width: 950px) {
+      .search-panel {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .summary-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+
+      .people-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .category-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .patrimony-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 650px) {
+      .app {
+        padding: 10px;
+      }
+
+      .topbar,
+      .source-bar,
+      .section-header {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .top-actions,
+      .top-actions .btn {
+        width: 100%;
+      }
+
+      .search-panel,
+      .kpis,
+      .summary-grid,
+      .people-grid,
+      .category-grid,
+      .patrimony-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+      }
+
+      .tab {
+        flex-shrink: 0;
+      }
+    }
+  </style>
 </head>
+
 <body>
-<div class="loading" id="ld"><div class="spin"></div></div>
-<div class="toast" id="toast"></div>
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+  </div>
 
-<div id="dash">
-  <div class="header">
-    <div class="header-logo-wrap">
-      <img src="./img/logo-transparent.png" id="logo-img" alt="Logo IDEQ"
-           onerror="this.style.display='none';document.getElementById('logo-fb').style.display='block';">
-      <div id="logo-fb" style="display:none;">
-        <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="IDEQ">
-          <defs><clipPath id="cc"><circle cx="100" cy="100" r="98"/></clipPath></defs>
-          <g clip-path="url(#cc)"><rect x="0" y="0" width="200" height="200" fill="#5a7a3a"/><polygon points="0,0 200,0 0,200" fill="#c6d063"/></g>
-          <circle cx="100" cy="100" r="98" fill="none" stroke="#7b9452" stroke-width="1.5"/>
-          <text x="103" y="122" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="56" font-weight="700" fill="#fff" letter-spacing="-2"><tspan font-size="46">i</tspan>DEQ</text>
-          <rect x="76" y="48" width="11" height="11" fill="#d4a017" rx="1.5"/>
-        </svg>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logo">
+          <img src="./img/logo-transparent.png" alt="Logo IDEQ">
+        </div>
+        <div>
+          <h1>Gestão de Ativos de TI</h1>
+          <p>Central de consulta e controle patrimonial</p>
+        </div>
       </div>
+
+      <div class="top-actions">
+        <input
+          type="file"
+          id="fileInput"
+          accept=".xlsx,.xls,.csv"
+        >
+
+        <button
+          class="btn btn-primary"
+          id="importButton"
+          type="button"
+        >
+          Importar planilha
+        </button>
+      </div>
+    </header>
+
+    <div class="source-bar">
+      <span id="sourceText">
+        Nenhum arquivo importado. Importe uma planilha para consultar o inventário.
+      </span>
+
+      <strong id="recordCount">0 registros</strong>
     </div>
-    <div class="header-title">Dashboard Executivo - GITIA</div>
-    <div class="header-meta" id="hm">Carregando...</div>
-  </div>
 
-  <div class="toolbar">
-    <div class="tl"><div class="badge" id="dsb">Dados de exemplo</div></div>
-    <div class="tr">
-      <input type="file" id="fi" accept=".xlsx,.xls,.pdf">
-      <button class="btn btn-up" onclick="document.getElementById('fi').click();">Importar Arquivo</button>
-      <button class="btn btn-exp" id="bexp" onclick="exportPDF();">Exportar PDF</button>
-    </div>
-  </div>
+    <section class="search-panel">
+      <div class="search-box">
+        <span class="search-icon">⌕</span>
 
-  <div class="kpis" id="kpis"></div>
-  <div class="cgrid" id="cgrid"></div>
-  <div class="asec" id="asec"><div class="ctitle">Painel de Atencao</div><div class="agrid" id="agrid"></div></div>
-  <div class="conc">
-    <div class="cbl"><div class="ctitle" style="color:var(--ve)">Insights</div><div id="il"></div></div>
-    <div class="cbl"><div class="ctitle" style="color:var(--vp)">Recomendacoes</div><div id="rl"></div></div>
-  </div>
-  <div class="footer">IDEQ Contabilidade | Dashboard GITIA</div>
-</div>
+        <input
+          type="search"
+          id="globalSearch"
+          placeholder="Pesquisar patrimônio, notebook, monitor, colaborador, modelo ou unidade..."
+        >
+      </div>
 
-<script>
-if(window.pdfjsLib){pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';}
+      <select class="filter-select" id="categoryFilter">
+        <option value="">Todas as categorias</option>
+      </select>
 
-setTimeout(function(){var d=document.getElementById('ld');if(d&&!d.classList.contains('hid')){d.classList.add('hid');}},4000);
-var libsOk=typeof Chart!=='undefined'&&typeof XLSX!=='undefined';
+      <select class="filter-select" id="statusFilter">
+        <option value="">Todos os status</option>
+      </select>
 
-(function(){var n=new Date();var d=String(n.getDate()).padStart(2,'0')+'/'+String(n.getMonth()+1).padStart(2,'0')+'/'+n.getFullYear();document.getElementById('hm').textContent='Data: '+d+' | Sistema: Dashboard GITIA';})();
+      <select class="filter-select" id="collaboratorFilter">
+        <option value="">Todos os colaboradores</option>
+      </select>
 
-var logoSVGMarkup='<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" width="160" height="160"><defs><clipPath id="cc2"><circle cx="100" cy="100" r="98"/></clipPath></defs><g clip-path="url(#cc2)"><rect x="0" y="0" width="200" height="200" fill="#5a7a3a"/><polygon points="0,0 200,0 0,200" fill="#c6d063"/></g><circle cx="100" cy="100" r="98" fill="none" stroke="#7b9452" stroke-width="1.5"/><text x="103" y="122" text-anchor="middle" font-family="Segoe UI,Arial,sans-serif" font-size="56" font-weight="700" fill="#fff" letter-spacing="-2"><tspan font-size="46">i</tspan>DEQ</text><rect x="76" y="48" width="11" height="11" fill="#d4a017" rx="1.5"/></svg>';
+      <select class="filter-select" id="sectorFilter">
+        <option value="">Todos os setores</option>
+      </select>
 
-var exData={
-  kpis:[
-    {label:'Total de Itens',value:127,type:'d'},
-    {label:'Colaboradores',value:21,type:'d'},
-    {label:'Equipamentos Criticos',value:7,type:'a'},
-    {label:'Acessorios',value:67,type:'ac'}
-  ],
-  charts:[
-    {title:'Estado dos Equipamentos',type:'doughnut',labels:['Conservado','Novo','Lento/Travando'],data:[65,55,7],colors:['#7b9452','#c6d063','#dc2626']},
-    {title:'Quantidade por Colaborador',type:'bar',labels:['Thiago','Ana','Carlos','Maria','Joao','Pedro','Outros'],data:[12,8,6,5,4,3,9],colors:['#5a7a3a','#7b9452','#c6d063','#9ca3af','#dc2626','#f59e0b','#eab308']}
-  ],
-  alerts:[
-    {l:'r',t:'CRITICO - Bateria Estufada',d:'Pat. 00036 com bateria estufada. Risco de incendio. Descarte imediato.'},
-    {l:'r',t:'7 Notebooks Lento/Travando',d:'Patrimonios com baixo desempenho necessitam manutencao.'},
-    {l:'o',t:'Notebooks sem Senha',d:'2 equipamentos sem senha configurada.'},
-    {l:'y',t:'5 Notebooks sem Responsavel',d:'Patrimonios sem colaborador atribuido.'}
-  ],
-  insights:[
-    {cat:'Volume',text:'Total de <strong>127</strong> itens cadastrados no inventario.'},
-    {cat:'Quantidade',text:'A soma de equipamentos mobilizados e <strong>60</strong> unidades distribuidas entre os colaboradores.'},
-    {cat:'Frequencia',text:'A marca mais frequente e <strong>Dell</strong>, com 29 unidades (85,3% dos notebooks).'},
-    {cat:'Estrutura',text:'Foram identificadas <strong>4</strong> categorias de itens e <strong>21</strong> colaboradores equipados.'},
-    {cat:'Qualidade',text:'<strong>7</strong> equipamentos apresentam problemas de desempenho (lento/travando).'},
-    {cat:'Atencao',text:'<strong>5</strong> notebooks nao possuem colaborador atribuido, representando 16,7% da frota.'}
-  ],
-  recs:[
-    {num:'1',title:'Descartar equipamento com bateria estufada',prob:'Patrimonio 00036 apresenta bateria estufada, com risco de incendio.',acao:'Realizar descarte imediato e seguro do equipamento.',ben:'Eliminar risco de seguranca e responsabilidade civil.'},
-    {num:'2',title:'Manutencao dos notebooks lentos',prob:'7 equipamentos apresentam desempenho comprometido (lento/travando).',acao:'Avaliar upgrade de hardware (SSD/RAM) ou substituicao.',ben:'Restaurar produtividade dos colaboradores afetados.'},
-    {num:'3',title:'Atribuir responsavel aos notebooks sem dono',prob:'5 patrimonios nao possuem colaborador identificado.',acao:'Identificar o responsavel atual ou realocar o equipamento.',ben:'Garantir rastreabilidade e controle patrimonial completo.'},
-    {num:'4',title:'Implementar politica de senhas fortes',prob:'Senhas fracas ("1234") e padrao unico ("Ideq615") em uso.',acao:'Definir e aplicar politica de senhas complexas e exclusivas.',ben:'Reduzir vulnerabilidades de seguranca da informacao.'}
-  ]
-};
+      <select class="filter-select" id="locationFilter">
+        <option value="">Todas as unidades</option>
+      </select>
 
-var chs=[];
-var pal=['#7b9452','#5a7a3a','#c6d063','#9ca3af','#dc2626','#f59e0b','#eab308','#3b82f6','#8b5cf6','#ec4899'];
+      <select class="filter-select" id="quickFilter">
+        <option value="">Filtro rápido</option>
+        <option value="active">Equipamentos ativos</option>
+        <option value="inactive">Equipamentos inativos</option>
+        <option value="without-owner">Sem responsável</option>
+        <option value="maintenance">Em manutenção</option>
+        <option value="replacement">Aguardando troca</option>
+      </select>
+    </section>
 
-document.addEventListener('DOMContentLoaded',function(){
-  setTimeout(function(){
-    if(libsOk){render(exData);}
-    document.getElementById('ld').classList.add('hid');
-  },600);
-});
+    <section class="kpis" id="kpis">
+      <article class="kpi">
+        <div class="kpi-value">0</div>
+        <div class="kpi-label">Total de ativos</div>
+      </article>
 
-function render(data){
-  chs.forEach(function(c){if(c)c.destroy();});
-  chs=[];
-  document.getElementById('cgrid').innerHTML='';
-  renderK(data.kpis);
-  if(libsOk){renderC(data.charts);}
-  renderA(data.alerts);
-  renderIns(data.insights);
-  renderRec(data.recs);
-  anim();
-}
+      <article class="kpi">
+        <div class="kpi-value">0</div>
+        <div class="kpi-label">Notebooks</div>
+      </article>
 
-function renderK(k){
-  var c=document.getElementById('kpis');
-  c.innerHTML='';
-  k.forEach(function(x){
-    var d=document.createElement('div');
-    d.className='kpi'+(x.type==='a'?' alert':x.type==='ac'?' acc':'');
-    d.innerHTML='<div class="kpi-val" data-t="'+x.value+'">0</div><div class="kpi-lbl">'+x.label+'</div>';
-    c.appendChild(d);
-  });
-}
+      <article class="kpi">
+        <div class="kpi-value">0</div>
+        <div class="kpi-label">Monitores</div>
+      </article>
 
-function renderC(cs){
-  var c=document.getElementById('cgrid');
-  cs.forEach(function(ch,i){
-    var b=document.createElement('div');
-    b.className='cblock';
-    b.innerHTML='<div class="ctitle">'+ch.title+'</div><div class="cwrap"><canvas id="ch'+i+'"></canvas></div>';
-    c.appendChild(b);
-    var ctx=document.getElementById('ch'+i).getContext('2d');
-    var bg=ch.type==='bar'?ch.data.map(function(_,j){return(ch.colors||pal)[j%(ch.colors||pal).length];}):(ch.colors||pal);
-    chs.push(new Chart(ctx,{
-      type:ch.type,
-      data:{labels:ch.labels,datasets:[{data:ch.data,backgroundColor:bg,borderColor:bg,borderWidth:ch.type==='doughnut'?2:0,borderRadius:ch.type==='bar'?4:0}]},
-      options:{
-        responsive:true,maintainAspectRatio:false,
-        animation:{duration:1000},
-        plugins:{
-          legend:{display:ch.type==='doughnut',position:'bottom',labels:{font:{size:10},color:'#1f2937',padding:6,boxWidth:10}},
-          tooltip:{backgroundColor:'#5a7a3a',padding:8,cornerRadius:4}
-        },
-        scales:ch.type==='bar'?{y:{beginAtZero:true,ticks:{font:{size:9},color:'#6b7280'},grid:{color:'#f3f4f6'}},x:{ticks:{font:{size:9},color:'#6b7280'},grid:{display:false}}}:{}
-      }
-    }));
-  });
-}
+      <article class="kpi">
+        <div class="kpi-value">0</div>
+        <div class="kpi-label">Colaboradores</div>
+      </article>
 
-function renderA(a){
-  var c=document.getElementById('agrid');
-  var s=document.getElementById('asec');
-  c.innerHTML='';
-  if(!a||!a.length){s.style.display='none';return;}
-  s.style.display='block';
-  a.forEach(function(x){
-    var d=document.createElement('div');
-    d.className='aitem '+(x.l==='r'?'ar':x.l==='o'?'ao':'ay');
-    d.innerHTML='<div class="adot '+x.l+'"></div><div><strong>'+x.t+'</strong><br>'+x.d+'</div>';
-    c.appendChild(d);
-  });
-}
+      <article class="kpi">
+        <div class="kpi-value">0</div>
+        <div class="kpi-label">Equipamentos ativos</div>
+      </article>
 
-function renderIns(ins){
-  var c=document.getElementById('il');
-  c.innerHTML='';
-  if(!ins||!ins.length){c.innerHTML='<div style="font-size:12px;color:#9ca3af;padding:8px 0;">Sem insights disponiveis.</div>';return;}
-  ins.forEach(function(item){
-    var d=document.createElement('div');
-    d.className='ins-item';
-    if(typeof item==='string'){
-      d.innerHTML='<span class="ins-text">'+item+'</span>';
-    }else{
-      d.innerHTML='<span class="ins-cat">'+item.cat+'</span><span class="ins-text">'+item.text+'</span>';
-    }
-    c.appendChild(d);
-  });
-}
+      <article class="kpi warning">
+        <div class="kpi-value">0</div>
+        <div class="kpi-label">Sem responsável</div>
+      </article>
 
-function renderRec(recs){
-  var c=document.getElementById('rl');
-  c.innerHTML='';
-  if(!recs||!recs.length){c.innerHTML='<div style="font-size:12px;color:#9ca3af;padding:8px 0;">Sem recomendacoes disponiveis.</div>';return;}
-  recs.forEach(function(r){
-    var d=document.createElement('div');
-    d.className='rec-item';
-    if(typeof r==='string'){
-      d.innerHTML='<div class="rec-title">'+r+'</div>';
-    }else{
-      var html='<div class="rec-num">'+r.num+'</div>';
-      if(r.title){html+='<div class="rec-title">'+r.title+'</div>';}
-      if(r.prob){html+='<div class="rec-detail"><strong>Problema:</strong> '+r.prob+'</div>';}
-      if(r.acao){html+='<div class="rec-detail"><strong>Acao:</strong> '+r.acao+'</div>';}
-      if(r.ben){html+='<div class="rec-detail"><strong>Beneficio:</strong> '+r.ben+'</div>';}
-      d.innerHTML=html;
-    }
-    c.appendChild(d);
-  });
-}
+      <article class="kpi warning">
+        <div class="kpi-value">0</div>
+        <div class="kpi-label">Em manutenção</div>
+      </article>
 
-function anim(){
-  document.querySelectorAll('.kpi-val').forEach(function(el,i){
-    var t=parseInt(el.getAttribute('data-t'));
-    setTimeout(function(){countUp(el,0,t,900);},i*120);
-  });
-  document.querySelectorAll('.kpi,.cblock,.asec,.cbl').forEach(function(el,i){
-    setTimeout(function(){el.classList.add('vis');},i*100);
-  });
-}
+      <article class="kpi alert">
+        <div class="kpi-value">0</div>
+        <div class="kpi-label">Aguardando troca</div>
+      </article>
 
-function countUp(el,s,e,d){
-  var st=null;
-  function step(ts){
-    if(!st)st=ts;
-    var p=Math.min((ts-st)/d,1);
-    el.textContent=Math.floor(p*(e-s)+s).toLocaleString('pt-BR');
-    if(p<1){requestAnimationFrame(step);}
-    else{el.textContent=e.toLocaleString('pt-BR');}
-  }
-  requestAnimationFrame(step);
-}
+      <article class="kpi">
+        <div class="kpi-value">0</div>
+        <div class="kpi-label">Disponíveis para uso</div>
+      </article>
+    </section>
 
-function showToast(msg){
-  var t=document.getElementById('toast');
-  t.textContent=msg;
-  t.classList.add('show');
-  setTimeout(function(){t.classList.remove('show');},5000);
-}
+    <nav class="tabs">
+      <button class="tab active" data-view="executive">
+        Visão geral
+      </button>
 
-// UPLOAD
-document.getElementById('fi').addEventListener('change',function(e){
-  var f=e.target.files[0];
-  if(!f)return;
-  document.getElementById('ld').classList.remove('hid');
-  var ext=f.name.split('.').pop().toLowerCase();
+      <button class="tab" data-view="notebooks">
+        Notebooks
+      </button>
 
-  if(ext==='xlsx'||ext==='xls'){
-    var r=new FileReader();
-    r.onload=function(ev){
-      try{
-        var d=new Uint8Array(ev.target.result);
-        var wb=XLSX.read(d,{type:'array'});
-        var sh=wb.Sheets[wb.SheetNames[0]];
-        var rows=XLSX.utils.sheet_to_json(sh,{defval:''});
-        if(!rows.length){showToast('A planilha esta vazia.');document.getElementById('ld').classList.add('hid');return;}
-        proc(rows,f.name);
-      }catch(err){showToast('Erro ao ler o arquivo Excel.');document.getElementById('ld').classList.add('hid');}
+      <button class="tab" data-view="monitors">
+        Monitores
+      </button>
+
+      <button class="tab" data-view="other">
+        Demais equipamentos
+      </button>
+
+      <button class="tab" data-view="people">
+        Colaboradores
+      </button>
+
+      <button class="tab" data-view="patrimony">
+        Patrimônio
+      </button>
+
+      <button class="tab" data-view="all">
+        Todos os ativos
+      </button>
+    </nav>
+
+    <section class="view active" id="view-executive">
+      <div class="section-header">
+        <div>
+          <h2>Visão geral do inventário</h2>
+          <p>Indicadores calculados sobre os ativos extraídos da planilha.</p>
+        </div>
+
+        <span class="section-count" id="executiveCount">
+          0 ativos
+        </span>
+      </div>
+
+      <div class="category-grid" id="executiveCategories"></div>
+    </section>
+
+    <section class="view" id="view-notebooks">
+      <div class="section-header">
+        <div>
+          <h2>Notebooks</h2>
+          <p>
+            Separação entre notebooks em uso, em estoque e demais situações.
+          </p>
+        </div>
+
+        <span class="section-count" id="notebookCount">
+          0 notebooks
+        </span>
+      </div>
+
+      <div class="summary-grid" id="notebookSummary"></div>
+      <div class="table-card" id="notebookTable"></div>
+    </section>
+
+    <section class="view" id="view-monitors">
+      <div class="section-header">
+        <div>
+          <h2>Monitores</h2>
+          <p>
+            Cada valor preenchido em
+            <strong>patrimonio_monitor_se_tiver_</strong>
+            gera um monitor.
+          </p>
+        </div>
+
+        <span class="section-count" id="monitorCount">
+          0 monitores
+        </span>
+      </div>
+
+      <div class="summary-grid" id="monitorSummary"></div>
+      <div class="table-card" id="monitorTable"></div>
+    </section>
+
+    <section class="view" id="view-other">
+      <div class="section-header">
+        <div>
+          <h2>Demais equipamentos</h2>
+          <p>Equipamentos sem patrimônio de notebook ou monitor.</p>
+        </div>
+
+        <span class="section-count" id="otherCount">
+          0 equipamentos
+        </span>
+      </div>
+
+      <div class="category-grid" id="otherCategories"></div>
+    </section>
+
+    <section class="view" id="view-people">
+      <div class="section-header">
+        <div>
+          <h2>Colaboradores</h2>
+          <p>Equipamentos vinculados e ativos sem responsável.</p>
+        </div>
+
+        <span class="section-count" id="peopleCount">
+          0 colaboradores
+        </span>
+      </div>
+
+      <div class="people-grid" id="peopleCards"></div>
+      <div class="table-card" id="unassignedTable"></div>
+    </section>
+
+    <section class="view" id="view-patrimony">
+      <div class="section-header">
+        <div>
+          <h2>Patrimônio</h2>
+          <p>Controle separado dos patrimônios de notebooks e monitores.</p>
+        </div>
+      </div>
+
+      <div class="patrimony-grid" id="patrimonyCards"></div>
+
+      <div
+        class="table-card"
+        id="patrimonyTable"
+        style="margin-top:16px;"
+      ></div>
+    </section>
+
+    <section class="view" id="view-all">
+      <div class="section-header">
+        <div>
+          <h2>Todos os ativos</h2>
+          <p>
+            Uma mesma linha pode gerar dois ativos: um notebook e um monitor.
+          </p>
+        </div>
+
+        <span class="section-count" id="allCount">
+          0 ativos
+        </span>
+      </div>
+
+      <div class="table-card" id="allTable"></div>
+    </section>
+
+    <section class="empty-state" id="emptyState">
+      <h2>Importe o inventário para começar</h2>
+
+      <p>
+        O sistema lê todas as abas da planilha. Notebooks sem colaborador são
+        classificados como <strong>Em estoque</strong>, exceto quando houver
+        problema, manutenção ou troca indicada.
+      </p>
+
+      <button
+        class="btn btn-primary"
+        id="emptyImportButton"
+        type="button"
+      >
+        Selecionar planilha
+      </button>
+    </section>
+
+    <details class="raw-columns" id="rawColumns" hidden>
+      <summary>Colunas identificadas na planilha</summary>
+
+      <div class="raw-columns-content">
+        <div class="pill-list" id="rawColumnsList"></div>
+      </div>
+    </details>
+  </main>
+
+  <script>
+    "use strict";
+
+    var state = {
+      rows: [],
+      assets: [],
+      filteredAssets: [],
+      columns: [],
+      sourceName: ""
     };
-    r.readAsArrayBuffer(f);
-  }else if(ext==='pdf'){
-    f.arrayBuffer().then(function(buf){
-      pdfjsLib.getDocument({data:buf}).promise.then(function(pdf){
-        var ar=[],pm=[];
-        for(var p=1;p<=pdf.numPages;p++){
-          pm.push(pdf.getPage(p).then(function(pg){
-            return pg.getTextContent().then(function(c){
-              var it=c.items.filter(function(x){return x.str.trim();});
-              if(!it.length)return;
-              var ym={};
-              it.forEach(function(x){
-                var y=Math.round(x.transform[5]/2)*2;
-                if(!ym[y])ym[y]=[];
-                ym[y].push(x);
-              });
-              Object.keys(ym).map(Number).sort(function(a,b){return b-a;}).forEach(function(y){
-                var ri=ym[y].sort(function(a,b){return a.transform[4]-b.transform[4];});
-                var rd=ri.map(function(x){return x.str.trim();}).filter(function(s){return s;});
-                if(rd.length)ar.push(rd);
-              });
+
+    var aliases = {
+      patrimonyNotebook: [
+        "patrimonio_notebook_",
+        "patrimonio notebook",
+        "patrimonionotebook"
+      ],
+
+      patrimonyMonitor: [
+        "patrimonio_monitor_se_tiver_",
+        "patrimonio monitor se tiver",
+        "patrimoniomonitorsetiver",
+        "patrimonio monitor"
+      ],
+
+      collaborator: [
+        "colaborador",
+        "responsavel",
+        "responsável",
+        "usuario",
+        "usuário",
+        "funcionario",
+        "funcionário"
+      ],
+
+      item: [
+        "item",
+        "tipo",
+        "tipoequipamento",
+        "tipo de equipamento",
+        "categoria",
+        "categoriaequipamento"
+      ],
+
+      machine: [
+        "maquina_ou_acessorio",
+        "maquina ou acessorio",
+        "máquina ou acessório",
+        "maquina",
+        "máquina",
+        "descricao",
+        "descrição"
+      ],
+
+      model: [
+        "modelo",
+        "model"
+      ],
+
+      brand: [
+        "marca",
+        "fabricante"
+      ],
+
+      condition: [
+        "estado",
+        "condicao",
+        "condição"
+      ],
+
+      unit: [
+        "unidade",
+        "filial",
+        "local",
+        "localizacao",
+        "localização"
+      ],
+
+      quantity: [
+        "quantidade",
+        "qtd",
+        "qtde",
+        "quant"
+      ],
+
+      notes: [
+        "observacao",
+        "observação",
+        "observacoes",
+        "observações",
+        "comentario",
+        "comentário",
+        "nota",
+        "notas"
+      ],
+
+      sector: [
+        "setor",
+        "departamento",
+        "area",
+        "área"
+      ],
+
+      serial: [
+        "numerodeserie",
+        "número de série",
+        "numero de serie",
+        "serial",
+        "serialnumber",
+        "sn"
+      ]
+    };
+
+    var fileInput = document.getElementById("fileInput");
+    var loading = document.getElementById("loading");
+
+    document
+      .getElementById("importButton")
+      .addEventListener("click", openFilePicker);
+
+    document
+      .getElementById("emptyImportButton")
+      .addEventListener("click", openFilePicker);
+
+    fileInput.addEventListener("change", handleFileImport);
+
+    document
+      .getElementById("globalSearch")
+      .addEventListener("input", applyFilters);
+
+    document
+      .querySelectorAll(".filter-select")
+      .forEach(function (element) {
+        element.addEventListener("change", applyFilters);
+      });
+
+    document
+      .querySelectorAll(".tab")
+      .forEach(function (tab) {
+        tab.addEventListener("click", function () {
+          switchView(tab.dataset.view);
+        });
+      });
+
+    function openFilePicker() {
+      fileInput.click();
+    }
+
+    function setLoading(value) {
+      loading.classList.toggle("show", value);
+    }
+
+    function handleFileImport(event) {
+      var file = event.target.files[0];
+
+      if (!file) {
+        return;
+      }
+
+      var extension = file.name
+        .split(".")
+        .pop()
+        .toLowerCase();
+
+      if (
+        extension !== "xlsx" &&
+        extension !== "xls" &&
+        extension !== "csv"
+      ) {
+        showToast("Formato inválido. Use XLSX, XLS ou CSV.");
+        event.target.value = "";
+        return;
+      }
+
+      if (typeof XLSX === "undefined") {
+        showToast(
+          "A biblioteca de leitura da planilha não foi carregada."
+        );
+        event.target.value = "";
+        return;
+      }
+
+      setLoading(true);
+
+      var reader = new FileReader();
+
+      reader.onload = function (loadEvent) {
+        try {
+          var workbook = XLSX.read(loadEvent.target.result, {
+            type: extension === "csv" ? "string" : "array",
+            raw: false,
+            cellDates: true
+          });
+
+          if (
+            !workbook ||
+            !workbook.SheetNames ||
+            !workbook.SheetNames.length
+          ) {
+            throw new Error("Nenhuma aba encontrada.");
+          }
+
+          var allRows = [];
+
+          workbook.SheetNames.forEach(function (sheetName) {
+            var worksheet = workbook.Sheets[sheetName];
+
+            if (!worksheet) {
+              return;
+            }
+
+            var rows = XLSX.utils.sheet_to_json(worksheet, {
+              defval: "",
+              raw: false,
+              blankrows: false
             });
-          }));
+
+            rows.forEach(function (row) {
+              row.__aba_origem = sheetName;
+              allRows.push(row);
+            });
+          });
+
+          if (!allRows.length) {
+            throw new Error("Nenhum registro encontrado.");
+          }
+
+          finishImport(allRows, file.name);
+        } catch (error) {
+          console.error("Erro na importação:", error);
+          setLoading(false);
+
+          showToast(
+            "Não foi possível ler a planilha. Verifique se a primeira linha contém os cabeçalhos."
+          );
         }
-        Promise.all(pm).then(function(){
-          var pr=parsePdf(ar);
-          if(!pr.length){showToast('Nao foi possivel extrair dados tabulares do PDF.');document.getElementById('ld').classList.add('hid');return;}
-          proc(pr,f.name);
-        }).catch(function(){showToast('Erro ao processar o PDF.');document.getElementById('ld').classList.add('hid');});
-      }).catch(function(){showToast('Erro ao ler o PDF.');document.getElementById('ld').classList.add('hid');});
-    });
-  }else{
-    showToast('Formato nao suportado. Use .xlsx, .xls ou .pdf');
-    document.getElementById('ld').classList.add('hid');
-  }
-  e.target.value='';
-});
 
-function parsePdf(rows){
-  if(rows.length<2)return[];
-  rows=rows.filter(function(r){return r.length&&r.some(function(s){return s;});});
-  if(rows.length<2)return[];
-  var cc={};
-  rows.forEach(function(r){cc[r.length]=(cc[r.length]||0)+1;});
-  var mc=parseInt(Object.keys(cc).sort(function(a,b){return cc[b]-cc[a];})[0]);
-  rows=rows.filter(function(r){return r.length>=Math.max(1,mc-1);});
-  var fr=rows[0];
-  var frn=fr.every(function(s){return!isNaN(parseFloat(s.replace(/[^\d.-]/g,'')));});
-  var hd,si;
-  if(frn){hd=fr.map(function(_,i){return'Col'+(i+1);});si=0;}
-  else{hd=fr.map(function(h,i){return h||'Col'+(i+1);});si=1;}
-  var res=[];
-  for(var i=si;i<rows.length;i++){
-    var o={};
-    hd.forEach(function(h,idx){o[h]=rows[i][idx]!==undefined?rows[i][idx]:'';});
-    res.push(o);
-  }
-  return res;
-}
+        event.target.value = "";
+      };
 
-function proc(rows,fn){
-  var a=analyze(rows);
-  render(a);
-  var b=document.getElementById('dsb');
-  b.textContent='Importado: '+fn;
-  b.classList.add('live');
-  var n=new Date(),d=String(n.getDate()).padStart(2,'0')+'/'+String(n.getMonth()+1).padStart(2,'0')+'/'+n.getFullYear();
-  document.getElementById('hm').textContent='Data: '+d+' | '+fn+' | '+rows.length+' registros';
-  document.getElementById('ld').classList.add('hid');
-}
+      reader.onerror = function () {
+        setLoading(false);
+        event.target.value = "";
+        showToast("Não foi possível abrir o arquivo.");
+      };
 
-function analyze(rows){
-  var cols=Object.keys(rows[0]),nc=[],cc=[];
-  cols.forEach(function(col){
-    var vs=rows.map(function(r){return r[col];}).filter(function(v){return v!==null&&v!==undefined&&v!=='';});
-    if(!vs.length)return;
-    var nuc=vs.filter(function(v){return!isNaN(parseFloat(String(v).replace(/[^\d.-]/g,'')))&&isFinite(v);}).length;
-    if(nuc/vs.length>.7)nc.push(col);else cc.push(col);
-  });
-
-  var kpis=[{label:'Total Registros',value:rows.length,type:'d'}];
-  nc.slice(0,3).forEach(function(col){
-    var s=rows.reduce(function(a,r){var n=parseFloat(String(r[col]).replace(/[^\d.-]/g,''));return a+(isNaN(n)?0:n);},0);
-    kpis.push({label:col.substring(0,22),value:s%1===0?s:parseFloat(s.toFixed(2)),type:'d'});
-  });
-  while(kpis.length<4&&cc.length){
-    var c=cc.shift();
-    var u=new Set(rows.map(function(r){return r[c];}).filter(function(v){return v!==null&&v!==undefined&&v!=='';}));
-    kpis.push({label:'Unicos: '+c.substring(0,15),value:u.size,type:'ac'});
-  }
-  kpis=kpis.slice(0,4);
-
-  var charts=[];
-  // Grafico 1: doughnut do segundo categorico (ou primeiro)
-  if(cc.length>1){var c2=bcc(rows,cc[1],'doughnut');if(c2)charts.push(c2);}
-  else if(cc.length===1){var c2b=bcc(rows,cc[0],'doughnut');if(c2b)charts.push(c2b);}
-  // Grafico 2: numerico por primeiro categorico (QUANTIDADE POR COLABORADOR)
-  if(nc.length&&cc.length){var c3=bnc(rows,cc[0],nc[0]);if(c3)charts.push(c3);}
-  else if(cc.length>1){var c3b=bcc(rows,cc[0],'bar');if(c3b)charts.push(c3b);}
-  while(charts.length<2){
-    if(nc.length&&!charts.length){
-      var col=nc[0];
-      var vs=rows.map(function(r){var n=parseFloat(String(r[col]).replace(/[^\d.-]/g,''));return isNaN(n)?0:n;});
-      charts.push({title:col,type:'bar',labels:vs.map(function(_,i){return'L'+(i+1);}).slice(0,12),data:vs.slice(0,12),colors:pal});
-    }else{
-      charts.push({title:'Sem dados',type:'bar',labels:['N/A'],data:[0],colors:['#9ca3af']});
+      if (extension === "csv") {
+        reader.readAsText(file, "UTF-8");
+      } else {
+        reader.readAsArrayBuffer(file);
+      }
     }
-  }
 
-  var al=gAl(rows,nc,cc);
-  var ins=gIns(rows,nc,cc);
-  var recs=gRec(rows,nc,cc);
-  return{kpis:kpis,charts:charts,alerts:al,insights:ins,recs:recs};
-}
+    function finishImport(rows, fileName) {
+      var inventoryRows = selectInventoryRows(rows);
 
-function bcc(rows,col,type){
-  var c={};
-  rows.forEach(function(r){
-    var v=r[col];
-    if(v!==null&&v!==undefined&&v!==''){
-      var k=String(v).substring(0,25);
-      c[k]=(c[k]||0)+1;
-    }
-  });
-  var e=Object.entries(c).sort(function(a,b){return b[1]-a[1];}).slice(0,10);
-  if(!e.length)return null;
-  return{title:'Dist: '+col.substring(0,25),type:type,labels:e.map(function(x){return x[0];}),data:e.map(function(x){return x[1];}),colors:pal};
-}
+      if (!inventoryRows.length) {
+        setLoading(false);
+        showToast("Nenhuma aba de inventário foi encontrada.");
+        return;
+      }
 
-function bnc(rows,cc,nc){
-  var g={};
-  rows.forEach(function(r){
-    var cat=r[cc];
-    var num=parseFloat(String(r[nc]).replace(/[^\d.-]/g,''));
-    if(cat&&!isNaN(num)){
-      var k=String(cat).substring(0,25);
-      g[k]=(g[k]||0)+num;
-    }
-  });
-  var e=Object.entries(g).sort(function(a,b){return b[1]-a[1];}).slice(0,10);
-  if(!e.length)return null;
-  return{title:'Quantidade por '+cc.substring(0,20),type:'bar',labels:e.map(function(x){return x[0];}),data:e.map(function(x){return parseFloat(x[1].toFixed(2));}),colors:pal};
-}
+      state.sourceName = fileName;
+      state.rows = inventoryRows.map(normalizeRow);
+      state.assets = expandRowsIntoAssets(state.rows);
+      state.filteredAssets = state.assets.slice();
+      state.columns = collectColumns(inventoryRows);
 
-function gAl(rows,nc,cc){
-  var a=[];
-  for(var i=0;i<cc.length&&a.length<4;i++){
-    var col=cc[i];
-    var em=rows.filter(function(r){var v=r[col];return v===null||v===undefined||v==='';}).length;
-    if(em>0&&em/rows.length>.1){
-      a.push({l:'y',t:'ATENCAO - Dados ausentes: '+col.substring(0,20),d:em+' registros ('+(em/rows.length*100).toFixed(1)+'%) sem valor em "'+col+'".'});
-    }
-  }
-  for(var j=0;j<nc.length&&a.length<6;j++){
-    var col=nc[j];
-    var vs=rows.map(function(r){var n=parseFloat(String(r[col]).replace(/[^\d.-]/g,''));return isNaN(n)?null:n;}).filter(function(v){return v!==null;});
-    if(!vs.length)continue;
-    var mx=Math.max.apply(null,vs);
-    var avg=vs.reduce(function(a,b){return a+b;},0)/vs.length;
-    if(mx>avg*3&&avg>0){
-      a.push({l:'o',t:'ALERTA - Valor atipico: '+col.substring(0,20),d:'Maximo ('+mx.toFixed(2)+') vs media ('+avg.toFixed(2)+'). Verificar consistencia.'});
-    }
-  }
-  return a;
-}
+      document.getElementById("emptyState").hidden = true;
+      document.getElementById("rawColumns").hidden = false;
 
-function gIns(rows,nc,cc){
-  var ins=[];
-  ins.push({cat:'Volume',text:'Total de <strong>'+rows.length+'</strong> registros analisados no arquivo importado.'});
-  if(nc.length>0){
-    var ncol=nc[0];
-    var vals=rows.map(function(r){var n=parseFloat(String(r[ncol]).replace(/[^\d.-]/g,''));return isNaN(n)?0:n;});
-    var sum=vals.reduce(function(a,b){return a+b;},0);
-    var avg=sum/vals.length;
-    ins.push({cat:'Quantidade',text:'A soma da coluna "'+ncol+'" e <strong>'+sum.toFixed(0)+'</strong> unidades, com media de '+avg.toFixed(1)+' por registro.'});
-  }
-  if(cc.length>0){
-    var col=cc[0],counts={};
-    rows.forEach(function(r){if(r[col])counts[r[col]]=(counts[r[col]]||0)+1;});
-    var top=Object.entries(counts).sort(function(a,b){return b[1]-a[1];})[0];
-    if(top){
-      var pct=(top[1]/rows.length*100).toFixed(1);
-      ins.push({cat:'Frequencia',text:'O item mais comum em "'+col+'" e "<strong>'+top[0]+'</strong>", com '+top[1]+' ocorrencias ('+pct+'% dos registros).'});
+      document.getElementById("sourceText").innerHTML =
+        "Arquivo atual: <strong>" +
+        escapeHtml(fileName) +
+        "</strong>";
+
+      populateFilters();
+      renderAll();
+      setLoading(false);
+
+      showToast(
+        formatNumber(state.rows.length) +
+        " linhas de inventário importadas e " +
+        formatNumber(state.assets.length) +
+        " ativos identificados."
+      );
     }
-  }
-  ins.push({cat:'Estrutura',text:'Foram identificadas <strong>'+cc.length+'</strong> colunas categoricas e <strong>'+nc.length+'</strong> colunas numericas nos dados.'});
-  var anyMissing=false;
-  cc.forEach(function(col){
-    var empty=rows.filter(function(r){var v=r[col];return v===null||v===undefined||v==='';}).length;
-    if(empty>0&&empty/rows.length>.05){
-      var p=(empty/rows.length*100).toFixed(1);
-      ins.push({cat:'Dados Ausentes',text:'A coluna "<strong>'+col+'</strong>" possui '+empty+' registros sem valor ('+p+'% do total).'});
-      anyMissing=true;
+
+    function selectInventoryRows(allRows) {
+      var inventoryRows = allRows.filter(function (row) {
+        var keys = Object.keys(row).map(normalizeKey);
+
+        var hasNotebookColumn = keys.indexOf(
+          "patrimonionotebook"
+        ) >= 0;
+
+        var hasMonitorColumn = keys.indexOf(
+          "patrimoniomonitorsetiver"
+        ) >= 0;
+
+        var hasItemColumn = keys.indexOf("item") >= 0;
+        var hasMachineColumn =
+          keys.indexOf("maquinaouacessorio") >= 0 ||
+          keys.indexOf("maquina") >= 0;
+
+        return (
+          hasNotebookColumn ||
+          hasMonitorColumn ||
+          hasItemColumn ||
+          hasMachineColumn
+        );
+      });
+
+      return inventoryRows;
     }
-  });
-  if(!anyMissing){ins.push({cat:'Qualidade',text:'Nenhum campo com dados ausentes significativos foi identificado.'});}
-  if(cc.length>0){
-    cc.forEach(function(col){
-      var uniq=new Set(rows.map(function(r){return r[col];}).filter(function(v){return v!==null&&v!==undefined&&v!=='';}));
-      if(uniq.size>0&&uniq.size<=5&&rows.length>5){
-        var topCounts={};
-        rows.forEach(function(r){if(r[col])topCounts[r[col]]=(topCounts[r[col]]||0)+1;});
-        var sorted=Object.entries(topCounts).sort(function(a,b){return b[1]-a[1];});
-        if(sorted.length>=2){
-          var conc=(sorted[0][1]/rows.length*100).toFixed(1);
-          ins.push({cat:'Concentracao',text:'Em "'+col+'", "<strong>'+sorted[0][0]+'</strong>" concentra '+conc+'% dos registros ('+sorted[0][1]+' de '+rows.length+').'});
+
+    function normalizeRow(raw) {
+      var columns = Object.keys(raw);
+      var fields = resolveFields(columns);
+      var row = {};
+
+      columns.forEach(function (column) {
+        row[column] = cleanValue(raw[column]);
+      });
+
+      row.__raw = raw;
+      row.__fields = fields;
+      row.__sheet = valueFrom(raw, "__aba_origem");
+
+      row.__patrimonyNotebook = valueFrom(
+        raw,
+        fields.patrimonyNotebook
+      );
+
+      row.__patrimonyMonitor = valueFrom(
+        raw,
+        fields.patrimonyMonitor
+      );
+
+      row.__item = valueFrom(raw, fields.item);
+      row.__machine = valueFrom(raw, fields.machine);
+      row.__model = valueFrom(raw, fields.model);
+      row.__brand = valueFrom(raw, fields.brand);
+      row.__condition = valueFrom(raw, fields.condition);
+      row.__collaborator = valueFrom(
+        raw,
+        fields.collaborator
+      );
+      row.__unit = valueFrom(raw, fields.unit);
+      row.__quantity = parseQuantity(
+        valueFrom(raw, fields.quantity)
+      );
+      row.__notes = valueFrom(raw, fields.notes);
+      row.__sector = valueFrom(raw, fields.sector);
+      row.__serial = valueFrom(raw, fields.serial);
+
+      if (!row.__model) {
+        row.__model = row.__machine;
+      }
+
+      if (!row.__notes) {
+        row.__notes = getAdditionalNotes(raw, fields);
+      }
+
+      row.__status = detectStatus(row);
+
+      return row;
+    }
+
+    function expandRowsIntoAssets(rows) {
+      var assets = [];
+
+      rows.forEach(function (row, index) {
+        if (!isEmptyValue(row.__patrimonyNotebook)) {
+          assets.push(
+            createAsset(
+              row,
+              "Notebooks",
+              row.__patrimonyNotebook,
+              index
+            )
+          );
         }
-      }
-    });
-  }
-  return ins;
-}
 
-function gRec(rows,nc,cc){
-  var recs=[];
-  var recNum=1;
-  cc.forEach(function(col){
-    var empty=rows.filter(function(r){var v=r[col];return v===null||v===undefined||v==='';}).length;
-    if(empty>0&&empty/rows.length>.1){
-      var colL=col.toLowerCase();
-      var isPessoa=colL.indexOf('colab')>-1||colL.indexOf('resp')>-1||colL.indexOf('usuario')>-1||colL.indexOf('func')>-1;
-      var isPatrim=colL.indexOf('patrim')>-1||colL.indexOf('serial')>-1||colL.indexOf('serie')>-1;
-      var pct=(empty/rows.length*100).toFixed(1);
-      if(isPessoa){
-        recs.push({num:String(recNum++),title:'Validar registros sem '+col.toLowerCase(),
-          prob:empty+' registros ('+pct+'%) nao possuem '+col.toLowerCase()+' identificado.',
-          acao:'Revisar e preencher o campo "'+col+'" em todos os registros afetados.',
-          ben:'Melhorar a rastreabilidade e responsabilizacao dos ativos.'});
-      }else if(isPatrim){
-        recs.push({num:String(recNum++),title:'Completar '+col.toLowerCase()+' ausente',
-          prob:empty+' registros estao sem '+col.toLowerCase()+' preenchido.',
-          acao:'Identificar e atribuir '+col.toLowerCase()+' a todos os registros.',
-          ben:'Garantir controle patrimonial completo e auditoria confiavel.'});
-      }else{
-        recs.push({num:String(recNum++),title:'Preencher dados ausentes em "'+col+'"',
-          prob:empty+' registros ('+pct+'%) estao sem valor na coluna "'+col+'".',
-          acao:'Revisar a origem dos dados e completar os registros faltantes.',
-          ben:'Garantir integridade e confiabilidade das analises.'});
-      }
-    }
-  });
-  cc.forEach(function(col){
-    var colL=col.toLowerCase();
-    if(colL.indexOf('maquina')>-1||colL.indexOf('equip')>-1||colL.indexOf('desc')>-1||colL.indexOf('modelo')>-1||colL.indexOf('tipo')>-1){
-      var unique=new Set(rows.map(function(r){return r[col];}).filter(function(v){return v!==null&&v!==undefined&&v!=='';}));
-      if(unique.size>rows.length*0.4&&rows.length>5){
-        recs.push({num:String(recNum++),title:'Padronizar '+col.toLowerCase(),
-          prob:'Foram encontrados '+unique.size+' valores diferentes para "'+col+'" em '+rows.length+' registros.',
-          acao:'Aplicar uma nomenclatura unica e padronizada para '+col.toLowerCase()+'.',
-          ben:'Facilitar filtros, agrupamentos e analises futuras.'});
-      }
-    }
-  });
-  nc.forEach(function(col){
-    var vals=rows.map(function(r){var n=parseFloat(String(r[col]).replace(/[^\d.-]/g,''));return isNaN(n)?null:n;}).filter(function(v){return v!==null;});
-    if(vals.length>3){
-      var mx=Math.max.apply(null,vals);
-      var avg=vals.reduce(function(a,b){return a+b;},0)/vals.length;
-      if(mx>avg*3&&avg>0){
-        recs.push({num:String(recNum++),title:'Verificar valor atipico em "'+col+'"',
-          prob:'O valor maximo ('+mx.toFixed(2)+') e significativamente superior a media ('+avg.toFixed(2)+').',
-          acao:'Investigar o registro com valor atipico e corrigir se necessario.',
-          ben:'Evitar distorcoes nos indicadores e garantir analises confiaveis.'});
-      }
-    }
-  });
-  if(recs.length===0){
-    recs.push({num:'1',title:'Revisao geral de dados',
-      prob:'Os dados importados podem conter inconsistencias nao detectadas automaticamente.',
-      acao:'Realizar uma revisao manual dos registros para validar a integridade.',
-      ben:'Garantir confiabilidade nas analises e decisoes baseadas no dashboard.'});
-  }
-  return recs;
-}
-
-function exportPDF(){
-  var btn=document.getElementById('bexp');
-  btn.disabled=true;
-  btn.textContent='Gerando PDF...';
-  var chartReady=chs.map(function(c){
-    return new Promise(function(resolve){
-      if(c){c.options.animation=false;c.update('none');}
-      resolve();
-    });
-  });
-  Promise.all(chartReady).then(function(){
-    return new Promise(function(r){setTimeout(r,600);});
-  }).then(function(){
-    var container=document.getElementById('dash');
-    return html2canvas(container,{
-      scale:2,
-      backgroundColor:'#ffffff',
-      useCORS:true,
-      allowTaint:false,
-      logging:false,
-      windowWidth:container.scrollWidth,
-      onclone:function(clonedDoc){
-        var logoImg=clonedDoc.querySelector('#logo-img');
-        if(logoImg&&logoImg.style.display!=='none'){
-          var wrapper=document.createElement('div');
-          wrapper.innerHTML=logoSVGMarkup;
-          var svgEl=wrapper.firstChild;
-          svgEl.style.maxWidth='160px';
-          svgEl.style.maxHeight='90px';
-          svgEl.style.height='auto';
-          logoImg.parentNode.replaceChild(svgEl,logoImg);
+        if (!isEmptyValue(row.__patrimonyMonitor)) {
+          assets.push(
+            createAsset(
+              row,
+              "Monitores",
+              row.__patrimonyMonitor,
+              index
+            )
+          );
         }
-      }
-    });
-  }).then(function(canvas){
-    var imgData=canvas.toDataURL('image/png');
-    var pdf=new jspdf.jsPDF('p','mm','a4');
-    var imgW=210,pageH=297;
-    var imgH=canvas.height*imgW/canvas.width;
-    var heightLeft=imgH,pos=0;
-    pdf.addImage(imgData,'PNG',0,pos,imgW,imgH);
-    heightLeft-=pageH;
-    while(heightLeft>0){
-      pos=heightLeft-imgH;
-      pdf.addPage();
-      pdf.addImage(imgData,'PNG',0,pos,imgW,imgH);
-      heightLeft-=pageH;
+
+        if (
+          isEmptyValue(row.__patrimonyNotebook) &&
+          isEmptyValue(row.__patrimonyMonitor)
+        ) {
+          assets.push(
+            createAsset(
+              row,
+              detectOtherCategory(row),
+              "",
+              index
+            )
+          );
+        }
+      });
+
+      return assets;
     }
-    pdf.save('Dashboard_IDEQ_'+new Date().toISOString().slice(0,10)+'.pdf');
-    btn.disabled=false;
-    btn.textContent='Exportar PDF';
-  }).catch(function(){
-    showToast('Nao foi possivel gerar o PDF. Tente novamente em alguns instantes.');
-    btn.disabled=false;
-    btn.textContent='Exportar PDF';
-  });
-}
-</script>
+
+    function createAsset(row, category, patrimony, sourceRow) {
+      var asset = {
+        id: sourceRow + "-" + category + "-" + patrimony,
+        sourceRow: sourceRow,
+        category: category,
+        patrimony: patrimony,
+        notebookPatrimony: row.__patrimonyNotebook,
+        monitorPatrimony: row.__patrimonyMonitor,
+        item: row.__item,
+        machine: row.__machine,
+        model: row.__model,
+        brand: row.__brand,
+        condition: row.__condition,
+        status: row.__status,
+        collaborator: row.__collaborator,
+        sector: row.__sector,
+        unit: row.__unit,
+        quantity: row.__quantity,
+        serial: row.__serial,
+        notes: row.__notes,
+        sheet: row.__sheet,
+        raw: row.__raw
+      };
+
+      asset.notebookStatus =
+        category === "Notebooks"
+          ? getNotebookStatus(asset)
+          : "";
+
+      return asset;
+    }
+
+    function getNotebookStatus(asset) {
+      var notes = normalizeText(asset.notes);
+      var status = normalizeText(asset.status);
+
+      if (
+        /troca|substituicao|substituição|trocar/.test(notes) ||
+        status === "aguardando troca"
+      ) {
+        return "Aguardando troca";
+      }
+
+      if (
+        /conserto|manutencao|manutenção|reparo|assistencia|assistência/.test(notes) ||
+        status === "em manutencao"
+      ) {
+        return "Em manutenção";
+      }
+
+      if (
+        /lento|travando|defeito|problema|bateria estufada|quebrado|falha/.test(notes) ||
+        status === "com problema"
+      ) {
+        return "Com problema";
+      }
+
+      if (
+        !isEmptyValue(asset.collaborator) ||
+        /em uso|uso/.test(notes) ||
+        status === "ativo"
+      ) {
+        return "Em uso";
+      }
+
+      return "Em estoque";
+    }
+
+    function resolveFields(columns) {
+      var fields = {};
+
+      Object.keys(aliases).forEach(function (field) {
+        fields[field] = findColumn(
+          columns,
+          aliases[field]
+        );
+      });
+
+      return fields;
+    }
+
+    function findColumn(columns, names) {
+      var normalizedColumns = columns.map(function (column) {
+        return {
+          original: column,
+          normalized: normalizeKey(column)
+        };
+      });
+
+      var normalizedNames = names.map(function (name) {
+        return normalizeKey(name);
+      });
+
+      var exact = normalizedColumns.find(function (column) {
+        return normalizedNames.indexOf(
+          column.normalized
+        ) >= 0;
+      });
+
+      if (exact) {
+        return exact.original;
+      }
+
+      var partial = normalizedColumns.find(function (column) {
+        return normalizedNames.some(function (name) {
+          return column.normalized.indexOf(name) >= 0 ||
+            name.indexOf(column.normalized) >= 0;
+        });
+      });
+
+      return partial ? partial.original : "";
+    }
+
+    function valueFrom(raw, column) {
+      if (!column) {
+        return "";
+      }
+
+      return cleanValue(raw[column]);
+    }
+
+    function getAdditionalNotes(raw, fields) {
+      var excluded = [
+        fields.patrimonyNotebook,
+        fields.patrimonyMonitor,
+        fields.collaborator,
+        fields.item,
+        fields.machine,
+        fields.model,
+        fields.brand,
+        fields.condition,
+        fields.unit,
+        fields.quantity,
+        fields.notes,
+        fields.sector,
+        fields.serial,
+        "__aba_origem"
+      ];
+
+      var values = [];
+
+      Object.keys(raw).forEach(function (key) {
+        if (
+          excluded.indexOf(key) === -1 &&
+          cleanValue(raw[key])
+        ) {
+          values.push(
+            key + ": " + cleanValue(raw[key])
+          );
+        }
+      });
+
+      return values.join(" | ");
+    }
+
+    function detectOtherCategory(row) {
+      var text = normalizeText([
+        row.__item,
+        row.__machine,
+        row.__model,
+        row.__brand
+      ].join(" "));
+
+      if (/teclado|keyboard/.test(text)) {
+        return "Teclados";
+      }
+
+      if (/mousepad/.test(text)) {
+        return "Mousepads";
+      }
+
+      if (/mouse/.test(text)) {
+        return "Mouses";
+      }
+
+      if (/headset|fone/.test(text)) {
+        return "Headsets";
+      }
+
+      if (/dock|docking|hub/.test(text)) {
+        return "Dock Stations";
+      }
+
+      if (/fonte|carregador|power supply/.test(text)) {
+        return "Fontes";
+      }
+
+      if (/adaptador|cabo|hdmi|vga|usb/.test(text)) {
+        return "Adaptadores e cabos";
+      }
+
+      if (/celular|smartphone|iphone|android/.test(text)) {
+        return "Celulares";
+      }
+
+      if (/impressora|printer|scanner/.test(text)) {
+        return "Impressoras";
+      }
+
+      if (/nobreak|no-break|estabilizador/.test(text)) {
+        return "Nobreaks";
+      }
+
+      if (/mochila|bolsa|case|maleta/.test(text)) {
+        return "Bolsas e mochilas";
+      }
+
+      if (/ssd|hd externo|pendrive|disco|memoria|memória/.test(text)) {
+        return "Armazenamento";
+      }
+
+      return row.__item || "Outros";
+    }
+
+    function detectStatus(row) {
+      var text = normalizeText([
+        row.__notes,
+        row.__condition,
+        row.__item,
+        row.__machine
+      ].join(" "));
+
+      if (/troca|substituicao|substituição|trocar/.test(text)) {
+        return "Aguardando troca";
+      }
+
+      if (
+        /conserto|manutencao|manutenção|reparo|assistencia|assistência/.test(text)
+      ) {
+        return "Em manutenção";
+      }
+
+      if (
+        /lento|travando|defeito|problema|bateria estufada|quebrado|falha/.test(text)
+      ) {
+        return "Com problema";
+      }
+
+      if (/em uso|ativo|operacional/.test(text)) {
+        return "Ativo";
+      }
+
+      if (/inativo|baixado|descartado/.test(text)) {
+        return "Inativo";
+      }
+
+      if (/disponivel|disponível|estoque|livre|novo|conservado/.test(text)) {
+        return "Disponível";
+      }
+
+      return "Não informado";
+    }
+
+    function applyFilters() {
+      var search = normalizeText(
+        document.getElementById("globalSearch").value
+      );
+
+      var category = normalizeText(
+        document.getElementById("categoryFilter").value
+      );
+
+      var status = normalizeText(
+        document.getElementById("statusFilter").value
+      );
+
+      var collaborator = normalizeText(
+        document.getElementById("collaboratorFilter").value
+      );
+
+      var sector = normalizeText(
+        document.getElementById("sectorFilter").value
+      );
+
+      var location = normalizeText(
+        document.getElementById("locationFilter").value
+      );
+
+      var quick = document.getElementById("quickFilter").value;
+
+      state.filteredAssets = state.assets.filter(function (asset) {
+        var searchable = normalizeText([
+          asset.patrimony,
+          asset.notebookPatrimony,
+          asset.monitorPatrimony,
+          asset.category,
+          asset.notebookStatus,
+          asset.item,
+          asset.machine,
+          asset.model,
+          asset.brand,
+          asset.serial,
+          asset.collaborator,
+          asset.sector,
+          asset.unit,
+          asset.status,
+          asset.condition,
+          asset.notes
+        ].join(" "));
+
+        if (
+          search &&
+          searchable.indexOf(search) === -1
+        ) {
+          return false;
+        }
+
+        if (
+          category &&
+          normalizeText(asset.category) !== category
+        ) {
+          return false;
+        }
+
+        var filterStatus =
+          asset.category === "Notebooks"
+            ? asset.notebookStatus
+            : asset.status;
+
+        if (
+          status &&
+          normalizeText(filterStatus) !== status
+        ) {
+          return false;
+        }
+
+        if (
+          collaborator &&
+          normalizeText(asset.collaborator) !== collaborator
+        ) {
+          return false;
+        }
+
+        if (
+          sector &&
+          normalizeText(asset.sector) !== sector
+        ) {
+          return false;
+        }
+
+        if (
+          location &&
+          normalizeText(asset.unit) !== location
+        ) {
+          return false;
+        }
+
+        if (
+          quick === "without-owner" &&
+          !isWithoutOwner(asset)
+        ) {
+          return false;
+        }
+
+        if (
+          quick &&
+          quick !== "without-owner" &&
+          !matchesQuickFilter(asset, quick)
+        ) {
+          return false;
+        }
+
+        return true;
+      });
+
+      renderAll();
+    }
+
+    function matchesQuickFilter(asset, filter) {
+      var currentStatus =
+        asset.category === "Notebooks"
+          ? asset.notebookStatus
+          : asset.status;
+
+      if (filter === "active") {
+        return currentStatus === "Ativo" ||
+          currentStatus === "Em uso";
+      }
+
+      if (filter === "inactive") {
+        return currentStatus === "Inativo";
+      }
+
+      if (filter === "maintenance") {
+        return currentStatus === "Em manutenção";
+      }
+
+      if (filter === "replacement") {
+        return currentStatus === "Aguardando troca";
+      }
+
+      return true;
+    }
+
+    function populateFilters() {
+      populateSelect(
+        "categoryFilter",
+        uniqueValues(state.assets, "category"),
+        "Todas as categorias"
+      );
+
+      var statuses = state.assets.map(function (asset) {
+        return {
+          status:
+            asset.category === "Notebooks"
+              ? asset.notebookStatus
+              : asset.status
+        };
+      });
+
+      populateSelect(
+        "statusFilter",
+        uniqueValues(statuses, "status"),
+        "Todos os status"
+      );
+
+      populateSelect(
+        "collaboratorFilter",
+        uniqueValues(state.assets, "collaborator"),
+        "Todos os colaboradores"
+      );
+
+      populateSelect(
+        "sectorFilter",
+        uniqueValues(state.assets, "sector"),
+        "Todos os setores"
+      );
+
+      populateSelect(
+        "locationFilter",
+        uniqueValues(state.assets, "unit"),
+        "Todas as unidades"
+      );
+
+      document.getElementById("rawColumnsList").innerHTML =
+        state.columns.map(function (column) {
+          return (
+            '<span class="pill">' +
+            escapeHtml(column) +
+            "</span>"
+          );
+        }).join("");
+    }
+
+    function populateSelect(id, values, placeholder) {
+      var select = document.getElementById(id);
+      var previous = select.value;
+
+      select.innerHTML =
+        '<option value="">' +
+        escapeHtml(placeholder) +
+        "</option>";
+
+      values.forEach(function (value) {
+        var option = document.createElement("option");
+        option.value = value;
+        option.textContent = value;
+        select.appendChild(option);
+      });
+
+      if (
+        Array.from(select.options).some(function (option) {
+          return option.value === previous;
+        })
+      ) {
+        select.value = previous;
+      }
+    }
+
+    function renderAll() {
+      var assets = state.filteredAssets;
+
+      renderKpis(assets);
+      renderExecutive(assets);
+
+      renderAssetSection(
+        "notebook",
+        assets.filter(function (asset) {
+          return asset.category === "Notebooks";
+        })
+      );
+
+      renderAssetSection(
+        "monitor",
+        assets.filter(function (asset) {
+          return asset.category === "Monitores";
+        })
+      );
+
+      renderOtherEquipment(assets);
+      renderPeople(assets);
+      renderPatrimony(assets);
+      renderAllAssets(assets);
+
+      document.getElementById("recordCount").textContent =
+        formatNumber(assets.length) +
+        " ativos filtrados";
+    }
+
+    function renderKpis(assets) {
+      var values = [
+        assets.length,
+
+        countBy(assets, function (asset) {
+          return asset.category === "Notebooks";
+        }),
+
+        countBy(assets, function (asset) {
+          return asset.category === "Monitores";
+        }),
+
+        uniqueValues(assets, "collaborator").length,
+
+        countBy(assets, function (asset) {
+          return asset.status === "Ativo" ||
+            asset.notebookStatus === "Em uso";
+        }),
+
+        countBy(assets, isWithoutOwner),
+
+        countBy(assets, function (asset) {
+          return asset.status === "Em manutenção" ||
+            asset.notebookStatus === "Em manutenção";
+        }),
+
+        countBy(assets, function (asset) {
+          return asset.status === "Aguardando troca" ||
+            asset.notebookStatus === "Aguardando troca";
+        }),
+
+        countBy(assets, function (asset) {
+          return asset.status === "Disponível" ||
+            asset.notebookStatus === "Em estoque";
+        })
+      ];
+
+      document
+        .querySelectorAll("#kpis .kpi-value")
+        .forEach(function (element, index) {
+          element.textContent = formatNumber(values[index]);
+        });
+    }
+
+    function renderExecutive(assets) {
+      document.getElementById("executiveCount").textContent =
+        formatNumber(assets.length) + " ativos";
+
+      var grouped = groupBy(assets, "category");
+      var categories = Object.keys(grouped).sort(function (a, b) {
+        return a.localeCompare(b, "pt-BR");
+      });
+
+      document.getElementById("executiveCategories").innerHTML =
+        categories.map(function (category) {
+          return categoryCardHtml(
+            category,
+            grouped[category]
+          );
+        }).join("") ||
+        emptyHtml("Nenhum ativo encontrado.");
+    }
+
+    function renderAssetSection(type, assets) {
+      var isNotebookSection = type === "notebook";
+      var prefix = isNotebookSection
+        ? "notebook"
+        : "monitor";
+
+      document.getElementById(prefix + "Count").textContent =
+        formatNumber(assets.length) +
+        (isNotebookSection ? " notebooks" : " monitores");
+
+      document.getElementById(prefix + "Summary").innerHTML =
+        isNotebookSection
+          ? notebookSummaryHtml(assets)
+          : summaryHtml(assets);
+
+      document.getElementById(prefix + "Table").innerHTML =
+        assetTableHtml(assets, isNotebookSection);
+    }
+
+    function notebookSummaryHtml(assets) {
+      var items = [
+        ["Total", assets.length, ""],
+
+        ["Em uso", countBy(assets, function (asset) {
+          return asset.notebookStatus === "Em uso";
+        }), "use"],
+
+        ["Em estoque", countBy(assets, function (asset) {
+          return asset.notebookStatus === "Em estoque";
+        }), "stock"],
+
+        ["Ativos", countBy(assets, function (asset) {
+          return asset.status === "Ativo";
+        }), ""],
+
+        ["Inativos", countBy(assets, function (asset) {
+          return asset.notebookStatus === "Inativo";
+        }), ""],
+
+        ["Sem responsável", countBy(assets, isWithoutOwner), "warning"],
+
+        ["Em manutenção", countBy(assets, function (asset) {
+          return asset.notebookStatus === "Em manutenção";
+        }), "warning"],
+
+        ["Aguardando troca", countBy(assets, function (asset) {
+          return asset.notebookStatus === "Aguardando troca";
+        }), "alert"],
+
+        ["Com problemas", countBy(assets, function (asset) {
+          return asset.notebookStatus === "Com problema";
+        }), "alert"]
+      ];
+
+      return items.map(function (item) {
+        return (
+          '<div class="summary-card ' +
+          item[2] +
+          '">' +
+          "<strong>" +
+          formatNumber(item[1]) +
+          "</strong>" +
+          "<span>" +
+          escapeHtml(item[0]) +
+          "</span>" +
+          "</div>"
+        );
+      }).join("");
+    }
+
+    function summaryHtml(assets) {
+      var items = [
+        ["Total", assets.length, ""],
+
+        ["Ativos", countBy(assets, function (asset) {
+          return asset.status === "Ativo";
+        }), ""],
+
+        ["Inativos", countBy(assets, function (asset) {
+          return asset.status === "Inativo";
+        }), ""],
+
+        ["Vinculados", countBy(assets, function (asset) {
+          return !isWithoutOwner(asset);
+        }), ""],
+
+        ["Sem responsável", countBy(assets, isWithoutOwner), "warning"],
+
+        ["Em manutenção", countBy(assets, function (asset) {
+          return asset.status === "Em manutenção";
+        }), "warning"],
+
+        ["Aguardando troca", countBy(assets, function (asset) {
+          return asset.status === "Aguardando troca";
+        }), "alert"]
+      ];
+
+      return items.map(function (item) {
+        return (
+          '<div class="summary-card ' +
+          item[2] +
+          '">' +
+          "<strong>" +
+          formatNumber(item[1]) +
+          "</strong>" +
+          "<span>" +
+          escapeHtml(item[0]) +
+          "</span>" +
+          "</div>"
+        );
+      }).join("");
+    }
+
+    function assetTableHtml(assets, isNotebookSection) {
+      if (!assets.length) {
+        return emptyHtml("Nenhum registro encontrado.");
+      }
+
+      var headers = isNotebookSection
+        ? [
+            "Patrimônio do notebook",
+            "Monitor relacionado",
+            "Modelo",
+            "Marca",
+            "Número de série",
+            "Situação do notebook",
+            "Status da linha",
+            "Colaborador responsável",
+            "Setor",
+            "Unidade",
+            "Observações"
+          ]
+        : [
+            "Patrimônio do monitor",
+            "Notebook relacionado",
+            "Modelo",
+            "Marca",
+            "Número de série",
+            "Status",
+            "Colaborador responsável",
+            "Setor",
+            "Unidade",
+            "Observações"
+          ];
+
+      var body = assets.map(function (asset) {
+        if (isNotebookSection) {
+          return (
+            "<tr>" +
+            "<td>" + display(asset.patrimony) + "</td>" +
+            "<td>" + display(asset.monitorPatrimony) + "</td>" +
+            "<td>" + display(asset.model) + "</td>" +
+            "<td>" + display(asset.brand) + "</td>" +
+            "<td>" + display(asset.serial) + "</td>" +
+            "<td>" + notebookStatusHtml(asset.notebookStatus) + "</td>" +
+            "<td>" + statusHtml(asset.status) + "</td>" +
+            "<td>" + display(asset.collaborator) + "</td>" +
+            "<td>" + display(asset.sector) + "</td>" +
+            "<td>" + display(asset.unit) + "</td>" +
+            "<td>" + display(asset.notes) + "</td>" +
+            "</tr>"
+          );
+        }
+
+        return (
+          "<tr>" +
+          "<td>" + display(asset.patrimony) + "</td>" +
+          "<td>" + display(asset.notebookPatrimony) + "</td>" +
+          "<td>" + display(asset.model) + "</td>" +
+          "<td>" + display(asset.brand) + "</td>" +
+          "<td>" + display(asset.serial) + "</td>" +
+          "<td>" + statusHtml(asset.status) + "</td>" +
+          "<td>" + display(asset.collaborator) + "</td>" +
+          "<td>" + display(asset.sector) + "</td>" +
+          "<td>" + display(asset.unit) + "</td>" +
+          "<td>" + display(asset.notes) + "</td>" +
+          "</tr>"
+        );
+      }).join("");
+
+      return tableHtml(headers, body);
+    }
+
+    function renderOtherEquipment(assets) {
+      var otherAssets = assets.filter(function (asset) {
+        return (
+          asset.category !== "Notebooks" &&
+          asset.category !== "Monitores"
+        );
+      });
+
+      document.getElementById("otherCount").textContent =
+        formatNumber(otherAssets.length) +
+        " equipamentos";
+
+      var grouped = groupBy(otherAssets, "category");
+      var categories = Object.keys(grouped).sort(function (a, b) {
+        return a.localeCompare(b, "pt-BR");
+      });
+
+      document.getElementById("otherCategories").innerHTML =
+        categories.map(function (category) {
+          return categoryCardHtml(
+            category,
+            grouped[category]
+          );
+        }).join("") ||
+        emptyHtml("Nenhum equipamento adicional encontrado.");
+    }
+
+    function categoryCardHtml(category, assets) {
+      var notebookCategory = category === "Notebooks";
+
+      return (
+        '<article class="category-card">' +
+        "<h3>" +
+        escapeHtml(category) +
+        "</h3>" +
+        '<div class="category-total">' +
+        formatNumber(assets.length) +
+        "</div>" +
+        '<div class="category-stats">' +
+        categoryStat(
+          notebookCategory ? "Em uso" : "Em uso",
+          countBy(assets, function (asset) {
+            return notebookCategory
+              ? asset.notebookStatus === "Em uso"
+              : asset.status === "Ativo";
+          })
+        ) +
+        categoryStat(
+          notebookCategory ? "Em estoque" : "Disponível",
+          countBy(assets, function (asset) {
+            return notebookCategory
+              ? asset.notebookStatus === "Em estoque"
+              : asset.status === "Disponível";
+          })
+        ) +
+        categoryStat(
+          "Inativo",
+          countBy(assets, function (asset) {
+            return notebookCategory
+              ? asset.notebookStatus === "Inativo"
+              : asset.status === "Inativo";
+          })
+        ) +
+        categoryStat(
+          "Sem responsável",
+          countBy(assets, isWithoutOwner)
+        ) +
+        "</div>" +
+        "</article>"
+      );
+    }
+
+    function categoryStat(label, value) {
+      return (
+        '<div class="category-stat">' +
+        "<strong>" +
+        formatNumber(value) +
+        "</strong>" +
+        "<span>" +
+        escapeHtml(label) +
+        "</span>" +
+        "</div>"
+      );
+    }
+
+    function renderPeople(assets) {
+      var people = {};
+      var unassigned = [];
+
+      assets.forEach(function (asset) {
+        if (isWithoutOwner(asset)) {
+          unassigned.push(asset);
+          return;
+        }
+
+        if (!people[asset.collaborator]) {
+          people[asset.collaborator] = [];
+        }
+
+        people[asset.collaborator].push(asset);
+      });
+
+      var names = Object.keys(people).sort(function (a, b) {
+        return a.localeCompare(b, "pt-BR");
+      });
+
+      document.getElementById("peopleCount").textContent =
+        formatNumber(names.length) +
+        " colaboradores";
+
+      document.getElementById("peopleCards").innerHTML =
+        names.map(function (name) {
+          var personAssets = people[name];
+
+          return (
+            '<article class="person-card">' +
+            "<h3>" +
+            escapeHtml(name) +
+            "</h3>" +
+            '<div class="person-count">' +
+            formatNumber(personAssets.length) +
+            " equipamento(s)</div>" +
+            '<div class="person-assets">' +
+            personAssets.slice(0, 12).map(function (asset) {
+              return (
+                '<span class="asset-chip">' +
+                escapeHtml(
+                  asset.patrimony ||
+                  asset.category ||
+                  asset.model ||
+                  "Ativo"
+                ) +
+                "</span>"
+              );
+            }).join("") +
+            (personAssets.length > 12
+              ? '<span class="asset-chip">+' +
+                formatNumber(personAssets.length - 12) +
+                " outros</span>"
+              : "") +
+            "</div>" +
+            "</article>"
+          );
+        }).join("") ||
+        emptyHtml("Nenhum colaborador identificado.");
+
+      document.getElementById("unassignedTable").innerHTML =
+        tableHtml(
+          [
+            "Tipo",
+            "Patrimônio",
+            "Patrimônio relacionado",
+            "Situação",
+            "Modelo",
+            "Unidade",
+            "Observações"
+          ],
+          unassigned.map(function (asset) {
+            var situation =
+              asset.category === "Notebooks"
+                ? asset.notebookStatus
+                : asset.status;
+
+            return (
+              "<tr>" +
+              "<td>" + display(asset.category) + "</td>" +
+              "<td>" + display(asset.patrimony) + "</td>" +
+              "<td>" +
+              display(
+                asset.category === "Monitores"
+                  ? asset.notebookPatrimony
+                  : asset.monitorPatrimony
+              ) +
+              "</td>" +
+              "<td>" +
+              (
+                asset.category === "Notebooks"
+                  ? notebookStatusHtml(situation)
+                  : statusHtml(situation)
+              ) +
+              "</td>" +
+              "<td>" + display(asset.model) + "</td>" +
+              "<td>" + display(asset.unit) + "</td>" +
+              "<td>" + display(asset.notes) + "</td>" +
+              "</tr>"
+            );
+          }).join(""),
+          "Nenhum equipamento sem responsável."
+        );
+    }
+
+    function renderPatrimony(assets) {
+      var patrimonies = assets
+        .map(function (asset) {
+          return asset.patrimony;
+        })
+        .filter(function (value) {
+          return !isEmptyValue(value);
+        });
+
+      var duplicates = findDuplicates(patrimonies);
+
+      var missingPatrimony = assets.filter(function (asset) {
+        return isEmptyValue(asset.patrimony);
+      });
+
+      var withoutOwner = assets.filter(isWithoutOwner);
+
+      var withoutLocation = assets.filter(function (asset) {
+        return isEmptyValue(asset.unit);
+      });
+
+      var withoutSerial = assets.filter(function (asset) {
+        return isEmptyValue(asset.serial);
+      });
+
+      var inactive = assets.filter(function (asset) {
+        return (
+          asset.status === "Inativo" ||
+          asset.notebookStatus === "Inativo"
+        );
+      });
+
+      var maintenance = assets.filter(function (asset) {
+        return (
+          asset.status === "Em manutenção" ||
+          asset.notebookStatus === "Em manutenção"
+        );
+      });
+
+      var cards = [
+        ["Patrimônios duplicados", duplicates.length],
+        ["Patrimônios inexistentes", missingPatrimony.length],
+        ["Sem responsável", withoutOwner.length],
+        ["Sem localização", withoutLocation.length],
+        ["Sem número de série", withoutSerial.length],
+        ["Inativos", inactive.length],
+        ["Em manutenção", maintenance.length]
+      ];
+
+      document.getElementById("patrimonyCards").innerHTML =
+        cards.map(function (item) {
+          return (
+            '<article class="patrimony-card">' +
+            "<strong>" +
+            formatNumber(item[1]) +
+            "</strong>" +
+            "<span>" +
+            escapeHtml(item[0]) +
+            "</span>" +
+            "</article>"
+          );
+        }).join("");
+
+      var issues = [];
+
+      assets.forEach(function (asset) {
+        var situation =
+          asset.category === "Notebooks"
+            ? asset.notebookStatus
+            : asset.status;
+
+        if (isEmptyValue(asset.patrimony)) {
+          issues.push({
+            issue: "Patrimônio inexistente",
+            asset: asset
+          });
+        }
+
+        if (isWithoutOwner(asset)) {
+          issues.push({
+            issue: "Sem responsável",
+            asset: asset
+          });
+        }
+
+        if (isEmptyValue(asset.unit)) {
+          issues.push({
+            issue: "Sem localização",
+            asset: asset
+          });
+        }
+
+        if (isEmptyValue(asset.serial)) {
+          issues.push({
+            issue: "Sem número de série",
+            asset: asset
+          });
+        }
+
+        if (situation === "Inativo") {
+          issues.push({
+            issue: "Inativo",
+            asset: asset
+          });
+        }
+
+        if (situation === "Em manutenção") {
+          issues.push({
+            issue: "Em manutenção",
+            asset: asset
+          });
+        }
+      });
+
+      document.getElementById("patrimonyTable").innerHTML =
+        tableHtml(
+          [
+            "Pendência",
+            "Tipo",
+            "Patrimônio",
+            "Patrimônio relacionado",
+            "Situação",
+            "Modelo",
+            "Colaborador",
+            "Unidade"
+          ],
+          issues.map(function (item) {
+            var asset = item.asset;
+            var situation =
+              asset.category === "Notebooks"
+                ? asset.notebookStatus
+                : asset.status;
+
+            return (
+              "<tr>" +
+              "<td>" + display(item.issue) + "</td>" +
+              "<td>" + display(asset.category) + "</td>" +
+              "<td>" + display(asset.patrimony) + "</td>" +
+              "<td>" +
+              display(
+                asset.category === "Monitores"
+                  ? asset.notebookPatrimony
+                  : asset.monitorPatrimony
+              ) +
+              "</td>" +
+              "<td>" +
+              (
+                asset.category === "Notebooks"
+                  ? notebookStatusHtml(situation)
+                  : statusHtml(situation)
+              ) +
+              "</td>" +
+              "<td>" + display(asset.model) + "</td>" +
+              "<td>" + display(asset.collaborator) + "</td>" +
+              "<td>" + display(asset.unit) + "</td>" +
+              "</tr>"
+            );
+          }).join(""),
+          "Nenhuma pendência patrimonial encontrada."
+        );
+    }
+
+    function renderAllAssets(assets) {
+      document.getElementById("allCount").textContent =
+        formatNumber(assets.length) + " ativos";
+
+      if (!assets.length) {
+        document.getElementById("allTable").innerHTML =
+          emptyHtml("Nenhum ativo encontrado.");
+        return;
+      }
+
+      var headers = [
+        "Tipo",
+        "Patrimônio",
+        "Patrimônio relacionado",
+        "Categoria",
+        "Situação",
+        "Modelo",
+        "Marca",
+        "Número de série",
+        "Colaborador",
+        "Setor",
+        "Unidade",
+        "Quantidade",
+        "Observações"
+      ];
+
+      var body = assets.map(function (asset) {
+        var situation =
+          asset.category === "Notebooks"
+            ? asset.notebookStatus
+            : asset.status;
+
+        var relatedPatrimony =
+          asset.category === "Monitores"
+            ? asset.notebookPatrimony
+            : asset.monitorPatrimony;
+
+        return (
+          "<tr>" +
+          "<td>" + display(asset.category) + "</td>" +
+          "<td>" + display(asset.patrimony) + "</td>" +
+          "<td>" + display(relatedPatrimony) + "</td>" +
+          "<td>" + display(asset.category) + "</td>" +
+          "<td>" +
+          (
+            asset.category === "Notebooks"
+              ? notebookStatusHtml(situation)
+              : statusHtml(situation)
+          ) +
+          "</td>" +
+          "<td>" + display(asset.model) + "</td>" +
+          "<td>" + display(asset.brand) + "</td>" +
+          "<td>" + display(asset.serial) + "</td>" +
+          "<td>" + display(asset.collaborator) + "</td>" +
+          "<td>" + display(asset.sector) + "</td>" +
+          "<td>" + display(asset.unit) + "</td>" +
+          "<td>" + formatNumber(asset.quantity) + "</td>" +
+          "<td>" + display(asset.notes) + "</td>" +
+          "</tr>"
+        );
+      }).join("");
+
+      document.getElementById("allTable").innerHTML =
+        tableHtml(headers, body);
+    }
+
+    function tableHtml(headers, body, emptyMessage) {
+      if (!body) {
+        return emptyHtml(
+          emptyMessage || "Nenhum registro encontrado."
+        );
+      }
+
+      return (
+        '<div class="table-scroll">' +
+        "<table>" +
+        "<thead><tr>" +
+        headers.map(function (header) {
+          return "<th>" + escapeHtml(header) + "</th>";
+        }).join("") +
+        "</tr></thead>" +
+        "<tbody>" +
+        body +
+        "</tbody>" +
+        "</table>" +
+        "</div>"
+      );
+    }
+
+    function notebookStatusHtml(status) {
+      var value = status || "Não informado";
+      var normalized = normalizeText(value);
+      var className = "status-default";
+
+      if (normalized === "em uso") {
+        className = "status-use";
+      } else if (normalized === "em estoque") {
+        className = "status-stock";
+      } else if (normalized === "em manutencao") {
+        className = "status-maintenance";
+      } else if (normalized === "aguardando troca") {
+        className = "status-replacement";
+      } else if (normalized === "com problema") {
+        className = "status-problem";
+      } else if (normalized === "inativo") {
+        className = "status-inactive";
+      }
+
+      return (
+        '<span class="status ' +
+        className +
+        '">' +
+        escapeHtml(value) +
+        "</span>"
+      );
+    }
+
+    function statusHtml(status) {
+      var value = status || "Não informado";
+      var normalized = normalizeText(value);
+      var className = "status-default";
+
+      if (normalized === "ativo") {
+        className = "status-active";
+      } else if (normalized === "disponivel") {
+        className = "status-available";
+      } else if (normalized === "inativo") {
+        className = "status-inactive";
+      } else if (normalized === "em manutencao") {
+        className = "status-maintenance";
+      } else if (normalized === "aguardando troca") {
+        className = "status-replacement";
+      } else if (normalized === "com problema") {
+        className = "status-problem";
+      }
+
+      return (
+        '<span class="status ' +
+        className +
+        '">' +
+        escapeHtml(value) +
+        "</span>"
+      );
+    }
+
+    function isWithoutOwner(asset) {
+      return isEmptyValue(asset.collaborator);
+    }
+
+    function isEmptyValue(value) {
+      var normalized = normalizeText(value);
+
+      return !normalized ||
+        normalized === "-" ||
+        normalized === "—" ||
+        normalized === "nao informado" ||
+        normalized === "não informado" ||
+        normalized === "n/a" ||
+        normalized === "null" ||
+        normalized === "undefined";
+    }
+
+    function groupBy(items, property) {
+      return items.reduce(function (groups, item) {
+        var key = item[property] || "Outros";
+
+        if (!groups[key]) {
+          groups[key] = [];
+        }
+
+        groups[key].push(item);
+        return groups;
+      }, {});
+    }
+
+    function uniqueValues(items, property) {
+      return Array.from(
+        new Set(
+          items
+            .map(function (item) {
+              return item[property];
+            })
+            .filter(function (value) {
+              return !isEmptyValue(value);
+            })
+        )
+      ).sort(function (a, b) {
+        return String(a).localeCompare(String(b), "pt-BR");
+      });
+    }
+
+    function countBy(items, predicate) {
+      return items.filter(predicate).length;
+    }
+
+    function findDuplicates(values) {
+      var counts = {};
+
+      values.forEach(function (value) {
+        counts[value] = (counts[value] || 0) + 1;
+      });
+
+      return Object.keys(counts).filter(function (value) {
+        return counts[value] > 1;
+      });
+    }
+
+    function parseQuantity(value) {
+      if (isEmptyValue(value)) {
+        return 0;
+      }
+
+      var normalized = String(value)
+        .replace(/\./g, "")
+        .replace(",", ".")
+        .replace(/[^\d.-]/g, "");
+
+      var parsed = parseFloat(normalized);
+
+      return isNaN(parsed) ? 0 : parsed;
+    }
+
+    function cleanValue(value) {
+      if (value === null || value === undefined) {
+        return "";
+      }
+
+      var result = String(value).trim();
+
+      if (
+        result === "—" ||
+        result === "-" ||
+        result.toLowerCase() === "null"
+      ) {
+        return "";
+      }
+
+      return result;
+    }
+
+    function normalizeKey(value) {
+      return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-zA-Z0-9]/g, "")
+        .toLowerCase();
+    }
+
+    function normalizeText(value) {
+      return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .trim();
+    }
+
+    function formatNumber(value) {
+      return Number(value || 0).toLocaleString("pt-BR");
+    }
+
+    function display(value) {
+      return escapeHtml(value || "Não informado");
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function emptyHtml(message) {
+      return (
+        '<div class="empty-cell">' +
+        escapeHtml(message) +
+        "</div>"
+      );
+    }
+
+    function collectColumns(rows) {
+      var columns = {};
+
+      rows.forEach(function (row) {
+        Object.keys(row).forEach(function (column) {
+          if (column !== "__aba_origem") {
+            columns[column] = true;
+          }
+        });
+      });
+
+      return Object.keys(columns);
+    }
+
+    function switchView(viewName) {
+      document
+        .querySelectorAll(".tab")
+        .forEach(function (tab) {
+          tab.classList.toggle(
+            "active",
+            tab.dataset.view === viewName
+          );
+        });
+
+      document
+        .querySelectorAll(".view")
+        .forEach(function (view) {
+          view.classList.toggle(
+            "active",
+            view.id === "view-" + viewName
+          );
+        });
+    }
+
+    function showToast(message) {
+      var toast = document.createElement("div");
+
+      toast.textContent = message;
+      toast.style.position = "fixed";
+      toast.style.zIndex = "10001";
+      toast.style.right = "20px";
+      toast.style.bottom = "20px";
+      toast.style.maxWidth = "360px";
+      toast.style.padding = "12px 16px";
+      toast.style.borderRadius = "8px";
+      toast.style.background = "#1f2937";
+      toast.style.color = "#fff";
+      toast.style.fontSize = "13px";
+      toast.style.boxShadow = "0 5px 18px rgba(0,0,0,.2)";
+
+      document.body.appendChild(toast);
+
+      setTimeout(function () {
+        toast.remove();
+      }, 3500);
+    }
+  </script>
 </body>
 </html>
