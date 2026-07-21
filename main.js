@@ -70,9 +70,11 @@ var KPI_CONFIG = [
   { fn: function (a) { return uniqueValues(a, "collaborator"); } },
   { fn: function (a) { return a.filter(function (x) { return x.status === "Ativo" || x.notebookStatus === "Em uso"; }); } },
   { fn: function (a) { return a.filter(function (x) { return x.notebookStatus === "Bom estado"; }); } },
+  { fn: function (a) { return a.filter(function (x) { return x.status === "Disponível" || x.notebookStatus === "Bom estado"; }); } },
   { fn: function (a) { return a.filter(function (x) { return x.status === "Em manutenção" || x.notebookStatus === "Em manutenção"; }); } },
   { fn: function (a) { return a.filter(function (x) { return x.status === "Troca/venda" || x.notebookStatus === "Troca/venda"; }); } },
-  { fn: function (a) { return a.filter(function (x) { return x.status === "Disponível" || x.notebookStatus === "Bom estado"; }); } }
+  { fn: function (a) { return a.filter(function (x) { return x.category === "Notebooks" && x.notebookStatus === "Com problemas"; }); } },
+  { fn: function (a) { return a.filter(function (x) { return x.category === "Monitores" && x.status === "Com problemas"; }); } }
 ];
 
 var NOTEBOOK_SUMMARY_CONFIG = [
